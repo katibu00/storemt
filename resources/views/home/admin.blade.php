@@ -76,6 +76,7 @@
 
                 <div class="container">
                     <div class="row">
+                        @if(auth()->user()->business->has_branches)
                         <div class="col-md-6">
                             <form class="row" action="{{ route('change_branch') }}" method="POST">
                                 @csrf
@@ -96,6 +97,7 @@
                                 </div>
                             </form>
                         </div>
+                        @endif
                         <div class="col-md-6">
                             <form class="row" action="{{ route('change_date') }}" method="POST">
                                 @csrf

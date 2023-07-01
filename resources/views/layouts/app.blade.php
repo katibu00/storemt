@@ -105,6 +105,7 @@ $business = App\Models\Business::where('id', auth()->user()->business_id)->first
                                     <a class="dropdown-item" href="{{ route('sms.balance') }}"><i class="icon-line-speech-bubble me-2"></i>SMS Balance</a>
                                     <div class="line m-0"></div>
                                     @endif
+                                    <a class="dropdown-item" href="{{ route('change.password') }}"><i class="icon-line-speech-bubble me-2"></i>Change Password</a>
                                     <a class="dropdown-item" href="{{ route('logout') }}"><i class="icon-line-log-out me-2"></i>Sign Out</a>
                                 </div>
                             </div>

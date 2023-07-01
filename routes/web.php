@@ -48,6 +48,8 @@ Route::get('/', function () {
 Route::get('/login', [AuthController::class, 'loginIndex'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::get('/change/password', [AuthController::class, 'changePasswordIndex'])->name('change.password');
+Route::post('/change/password', [AuthController::class, 'changePasswordStore']);
 
 Route::group(['middleware' => ['auth', 'admin']], function () {
     Route::get('/admin/home', [HomeController::class, 'admin'])->name('admin.home');

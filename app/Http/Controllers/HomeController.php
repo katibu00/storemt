@@ -177,11 +177,10 @@ class HomeController extends Controller
 
     public function admin(Request $request)
     {
-        $data['branches'] = Branch::all();
         $business_id = auth()->user()->business_id;
         $branch_id = auth()->user()->branch_id;
+        $data['branches'] = Branch::where('business_id',$business_id)->get();
 
-        //quries
         if(isset($request->date))
         {
             $todaySales = Sale::where('business_id', $business_id)->where('branch_id', $branch_id)->whereNotIn('product_id', [1093, 1012])->whereDate('created_at', $request->date)->get();

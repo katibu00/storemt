@@ -15,7 +15,9 @@
     <meta name="theme-color" content="#712cf9">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
 
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.css"
+    integrity="sha512-Mo79lrQ4UecW8OCcRUZzf0ntfMNgpOFR46Acj2ZtWO8vKhBvD79VCp3VOKSzk6TovLg5evL3Xi3u475Q/jMu4g=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
         body {
             background-color: #f8f9fa;
@@ -88,6 +90,21 @@
         .card .alert {
             margin-bottom: 10px;
         }
+        .card .form-floating {
+    position: relative;
+}
+
+.card .form-floating .password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    cursor: pointer;
+    z-index: 100;
+}
+
+
+
     </style>
 </head>
 
@@ -101,10 +118,12 @@
                 <input type="text" class="form-control" id="email_or_phone" name="email_or_phone" placeholder="Enter your Email or Phone number">
                 <label for="email_or_phone">Email/Phone Number</label>
             </div>
-            <div class="form-floating">
+            <div class="form-floating position-relative">
                 <input type="password" class="form-control" id="password" name="password" placeholder="Password">
                 <label for="password">Password</label>
+                <span class="password-toggle" onclick="togglePasswordVisibility()"><i class="fa fa-eye"></i></span>
             </div>
+            
 
             <div class="checkbox mb-3">
                 <label>
@@ -120,7 +139,26 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
 
     <script>
+        function togglePasswordVisibility() {
+            var passwordInput = document.getElementById("password");
+            var eyeIcon = document.querySelector(".password-toggle i");
+    
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text";
+                eyeIcon.classList.remove("fa-eye");
+                eyeIcon.classList.add("fa-eye-slash");
+            } else {
+                passwordInput.type = "password";
+                eyeIcon.classList.remove("fa-eye-slash");
+                eyeIcon.classList.add("fa-eye");
+            }
+        }
+    </script>
+
+
+    <script>
          $(document).ready(function() {
+
             $('#loginForm').submit(function(event) {
                 event.preventDefault();
                 var submitButton = $(this).find('button[type="submit"]');
