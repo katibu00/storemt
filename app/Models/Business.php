@@ -13,4 +13,21 @@ class Business extends Model
     {
         return $this->hasMany(Branch::class);
     }
+
+
+    public function products()
+    {
+        return $this->hasMany(Product::class);
+    }
+
+    public function sales()
+    {
+        return $this->hasMany(Sale::class);
+    }
+
+    public function loginLogs()
+    {
+        return $this->hasMany(LoginLog::class,'business_id');
+    }
+    
 }

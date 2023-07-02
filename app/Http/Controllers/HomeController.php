@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Branch;
+use App\Models\Business;
 use App\Models\Estimate;
 use App\Models\Expense;
+use App\Models\LoginLog;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\Purchase;
@@ -363,9 +365,75 @@ class HomeController extends Controller
 
     }
 
+    // public function super()
+    // {
+    //     return view('home.super');
+    // }
+
+
+
     public function super()
     {
-        return view('home.super');
+        // Get count of registered businesses
+        $registeredBusinesses = Business::count();
+    
+        // Get count of registered users
+        $registeredUsers = User::count();
+    
+        // Get the date range for the last 10 days
+        $startDate = Carbon::now()->subDays(10);
+        $endDate = Carbon::now();
+    
+        // Calculate the login count for today
+        $loginCountToday = LoginLog::whereDate('login_at', Carbon::today())->count();
+    
+        // Calculate the sales count for today
+        $salesCountToday = Sale::whereDate('created_at', Carbon::today())->count();
+    
+        // Get all registered businesses
+        $businesses = Business::all();
+    
+        // Get yesterday's date
+        $yesterday = Carbon::today();
+    
+        // Loop through the businesses to gather the required data
+  
+        
+        foreach ($businesses as $business) {
+            // Retrieve the count and last upload date of products for the business
+            $business->productsCount = $business->products()->count();
+            $lastProductUploadDate = $business->products()
+                ->latest('created_at')
+                ->value('created_at');
+            $business->lastProductUploadDate = $lastProductUploadDate ? Carbon::parse($lastProductUploadDate)->diffForHumans() : null;
+        
+            // Retrieve the count and last sales record date for the business
+            $business->salesCount = $business->sales()->count();
+            $lastSalesRecordDate = $business->sales()
+                ->latest('created_at')
+                ->value('created_at');
+            $business->lastSalesRecordDate = $lastSalesRecordDate ? Carbon::parse($lastSalesRecordDate)->diffForHumans() : null;
+        
+            // Check if the business has logged in within the specified date ranges
+            $business->loggedIn = $business->loginLogs()
+                ->where('login_at', '>=', $yesterday)
+                ->exists();
+            $business->loginCountLast10Days = $business->loginLogs()
+                ->whereBetween('login_at', [$startDate, $endDate])
+                ->count();
+            $business->salesCountLast10Days = $business->sales()
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->count();
+        }
+        
+    
+        // Pass the data to the view
+        return view('home.super', compact('businesses', 'registeredBusinesses', 'registeredUsers', 'loginCountToday', 'salesCountToday'));
     }
+    
+    
+    
+    
+
 
 }

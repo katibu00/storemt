@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Hash;
+use App\Models\LoginLog;
 
 
 class AuthController extends Controller
@@ -19,18 +20,22 @@ class AuthController extends Controller
         return view('auth.change_password');
     }
 
+
     public function login(Request $request)
     {
         $request->validate([
             'email_or_phone' => 'required',
             'password' => 'required',
         ]);
-
+    
         $credentials = $this->getCredentials($request);
         $rememberMe = $request->filled('rememberMe');
-
+    
         try {
             if (Auth::attempt($credentials, $rememberMe)) {
+                // Create a login log entry
+                $this->createLoginLog($request->ip(), auth()->user());
+    
                 if ($request->ajax()) {
                     return response()->json(['success' => true, 'redirect_url' => $this->getRedirectUrl()]);
                 } else {
@@ -49,6 +54,18 @@ class AuthController extends Controller
             }
         }
     }
+    
+    private function createLoginLog($ipAddress, $user)
+    {
+        // Create a new login log entry in the database
+        LoginLog::create([
+            'ip_address' => $ipAddress,
+            'user_id' => $user->id,
+            'business_id' => $user->business_id,
+            'login_at' => now(),
+        ]);
+    }
+    
 
 
     protected function getCredentials(Request $request)

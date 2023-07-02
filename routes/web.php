@@ -68,6 +68,10 @@ Route::group(['middleware' => ['auth', 'super']], function () {
     Route::get('/businesses/{business}/edit', 'BusinessController@edit')->name('business.edit');
     Route::put('/businesses/{business}', 'BusinessController@update')->name('business.update');
     Route::delete('/businesses/{business}', 'BusinessController@destroy')->name('business.destroy');
+
+
+    Route::get('/login-logs', [AuthController::class, 'logs'])->name('login-logs');
+
 });
 
 Route::group(['prefix' => 'business', 'middleware' => ['auth', 'admin']], function () {
