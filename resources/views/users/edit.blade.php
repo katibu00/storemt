@@ -15,17 +15,15 @@
                         <form action="{{route('users.update',$user->id)}}" method="post">
                             @csrf
                             <div class="form-group">
-                                <label for="first_name" class="col-form-label">First Name:</label>
-                                <input type="text" class="form-control" id="first_name" name="first_name" value="{{$user->first_name}}" required>
+                                <label for="name" class="col-form-label">Full Name:</label>
+                                <input type="text" class="form-control" id="name" name="name" value="{{$user->name}}" required>
                             </div>
-                            <div class="form-group">
-                                <label for="last_name" class="col-form-label">Last Name:</label>
-                                <input type="text" class="form-control" id="last_name" name="last_name" value="{{$user->last_name}}" required>
-                            </div>
+
                             <div class="form-group">
                                 <label for="email" class="col-form-label">Email:</label>
                                 <input type="email" class="form-control" id="email" name="email" value="{{$user->email}}" required>
                             </div>
+                            @if(auth()->user()->business->has_branches)
                             <div class="form-group">
                                 <label for="position">Branch</label>
                                 <select class="form-select" name="branch_id">
@@ -35,6 +33,7 @@
                                     @endforeach
                                 </select>
                             </div>
+                            @endif
                             <div class="form-group">
                                     <label for="position">Position</label>
                                     <select class="form-select" id="position" name="position" required>

@@ -6,7 +6,6 @@ use App\Models\Branch;
 use App\Models\Business;
 use App\Models\Product;
 use Illuminate\Http\Request;
-use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Support\Facades\DB;
 
 class ProductsController extends Controller
@@ -31,8 +30,6 @@ class ProductsController extends Controller
     }
 
     public function store(Request $request){
-
-       
 
         $validatedData = $request->validate([
             'productName.*' => 'required',
@@ -68,46 +65,29 @@ class ProductsController extends Controller
 
     }
 
-    public function edit($id){
-        $data['products'] = Product::find($id);
-        return view('products.edit',$data);
+    public function update(Request $request)
+    {
+        // dd($request->all());
+        $product = Product::findOrFail($request->productId);
+
+        $validatedData = $request->validate([
+            'buying_price' => 'required|numeric',
+            'selling_price' => 'required|numeric',
+            'quantity' => 'required|integer',
+            'alert_level' => 'required|integer',
+            'productName' => 'required',
+        ]);
+
+        $product->name = $validatedData['productName'];
+        $product->buying_price = $validatedData['buying_price'];
+        $product->selling_price = $validatedData['selling_price'];
+        $product->quantity = $validatedData['quantity'];
+        $product->alert_level = $validatedData['alert_level'];
+        $product->save();
+
+        return response()->json(['message' => 'Product updated successfully']);
     }
-
-    public function copyIndex($id){
-        $data['products'] = Product::find($id);
-        $data['branches'] = Branch::all();
-        return view('products.copy',$data);
-    }
-
-    public function update(Request $request, $id){
-       
-        $data = Product::find($id);
-        $data->name = $request->name;
-        $data->buying_price = $request->buying_price;
-        $data->selling_price = $request->selling_price;
-        $data->quantity = $request->quantity;
-        $data->critical_level = $request->critical_level;
-
-        $data->update();
-        Toastr::success('Inventory has been updated sucessfully', 'Done');
-        return redirect()->route('products.index');
-    }
-
-    public function copyStore(Request $request){
-       
-        $data = new Product();
-        $data->branch_id = $request->branch_id;
-        $data->name = $request->name;
-        $data->buying_price = $request->buying_price;
-        $data->selling_price = $request->selling_price;
-        $data->quantity = $request->quantity;
-        $data->critical_level = $request->critical_level;
-
-        $data->save();
-        Toastr::success('Inventory has been Copied sucessfully', 'Done');
-        return redirect()->route('products.index');
-    }
-
+   
     public function delete(Request $request)
     {
         $product = Product::find($request->productID);
@@ -142,7 +122,6 @@ class ProductsController extends Controller
         return response()->json(['message' => $message]);
     }
    
-
     public function filter(Request $request)
     {
         $filter = $request->input('filter');
@@ -184,9 +163,6 @@ class ProductsController extends Controller
         // Return the rendered table view
         return view('products.table', $data)->render();
     }
-    
-   
-
 
     public function Search(Request $request)
     {

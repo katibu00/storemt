@@ -83,10 +83,10 @@ Route::group(['prefix' => 'business', 'middleware' => ['auth', 'admin']], functi
 Route::group(['prefix' => 'products', 'middleware' => ['auth', 'admin']], function () {
     Route::get('/', [ProductsController::class, 'index'])->name('products.index');
     Route::post('/store', [ProductsController::class, 'store'])->name('products.store');
-    Route::get('/edit/{id}', [ProductsController::class, 'edit'])->name('products.edit');
-    Route::get('/copy/{id}', [ProductsController::class, 'copyIndex'])->name('inventory.copy');
-    Route::post('/update/{id}', [ProductsController::class, 'update'])->name('products.update');
-    Route::post('/copy', [ProductsController::class, 'copyStore'])->name('products.copy');
+    // Route::get('/edit/{id}', [ProductsController::class, 'edit'])->name('products.edit');
+    // Route::get('/copy/{id}', [ProductsController::class, 'copyIndex'])->name('inventory.copy');
+    Route::post('/update', [ProductsController::class, 'update'])->name('products.update');
+    // Route::post('/copy', [ProductsController::class, 'copyStore'])->name('products.copy');
     Route::post('/delete', [ProductsController::class, 'delete'])->name('products.delete');
     // Route::post('/fetch-products', [ProductsController::class, 'fetchStocks'])->name('fetch-products');
     Route::post('/search-products', [ProductsController::class, 'Search'])->name('search-products');

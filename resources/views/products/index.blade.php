@@ -63,88 +63,8 @@
             </div>
         </div>
     </section>
-
-
-
-
-    <!-- Add Product Modal -->
-    <div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addProductModalLabel">Add New Product</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form id="add-products-form">
-                    <div class="modal-body">
-                        @if(auth()->user()->business->has_branches == 1)
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="productName" class="form-label">Branch</label>
-                                   <select class="form-select" name="branch_id">
-                                    <option value="">--select branch--</option>
-                                    @foreach ($branches as $branch)
-                                    <option value="{{ $branch->id }}">{{ $branch->name }}</option>
-                                    @endforeach
-                                   </select>
-                                </div>
-                            </div>
-                        </div>
-                        @endif
-                        <!-- Add more rows dynamically -->
-                        <div id="productRowsContainer">
-                            <!-- Initial row -->
-                            <div class="row product-row">
-                                <div class="col-md-3">
-                                    <div class="mb-3">
-                                        <label for="productName" class="form-label">Product Name</label>
-                                        <input type="text" class="form-control" id="productName" name="productName[]">
-                                    </div>
-                                </div>
-                                <div class="col-md-2">
-                                    <div class="mb-3">
-                                        <label for="buyingPrice" class="form-label">Buy Price</label>
-                                        <input type="number" step="any" class="form-control" id="buyingPrice"
-                                            name="buyingPrice[]">
-                                    </div>
-                                </div>
-                                <div class="col-md-2">
-                                    <div class="mb-3">
-                                        <label for="sellingPrice" class="form-label">Sell Price</label>
-                                        <input type="number" step="any" class="form-control" name="sellingPrice[]">
-                                    </div>
-                                </div>
-                                <div class="col-md-2">
-                                    <div class="mb-3">
-                                        <label for="quantity" class="form-label">Quantity</label>
-                                        <input type="number" step="any" class="form-control" name="quantity[]">
-                                    </div>
-                                </div>
-                                <div class="col-md-2">
-                                    <div class="mb-3">
-                                        <label for="alertLevel" class="form-label">Alert Level</label>
-                                        <input type="number" step="any" class="form-control" name="alertLevel[]">
-                                    </div>
-                                </div>
-                                <div class="col-md-1 align-self-center">
-                                    <button type="button" class="btn btn-sm btn-danger remove-row-btn">&times;</button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="text-center mt-3">
-                            <button type="button" class="btn btn-success" id="addRowBtn">+ Rows</button>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" id="saveBtn" class="btn btn-primary">Save Products</button>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
+    @include('products.addModal')
+    @include('products.editModal')
 @endsection
 
 @section('js')
@@ -188,20 +108,20 @@
     <script>
         $(document).ready(function() {
             $('#add-products-form').submit(function(event) {
-                event.preventDefault(); 
+                event.preventDefault();
 
                 var saveBtn = $('#saveBtn');
                 saveBtn.html(
                     '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...'
-                    );
+                );
                 saveBtn.prop('disabled', true);
 
                 $.ajaxSetup({
                     headers: {
                         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                     }
-                });     
-                          
+                });
+
                 var formData = new FormData(this);
 
                 $.ajax({
@@ -215,15 +135,14 @@
                         var modal = $('#addProductModal');
                         modal.modal('hide');
                         toastr.success(response.message, 'Success');
-                        $('.table').load(location.href+' .table');
-
+                        $('.table').load(location.href + ' .table');
                     },
-                    error: function(xhr, status, error) {
-                        // Error: Handle the error here
-                        console.error(xhr.responseText);
+                    error: function(response) {
+                        var errors = response.responseJSON;
+                        var errorMessage = errors.message;
+                        toastr.error(errorMessage, 'Error');
                     },
                     complete: function() {
-                        // Hide the loading spinner and enable the button
                         saveBtn.html('Save Product');
                         saveBtn.prop('disabled', false);
                     }
@@ -232,167 +151,239 @@
         });
     </script>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css">
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.js"></script>
 
 
 
-<script>
-    $('#search-input').on('input', function() {
-        
-            var searchQuery = $(this).val(); 
-
+    <script>
+        $('#search-input').on('input', function() {
+            var searchQuery = $(this).val();
             $.ajaxSetup({
                 headers: {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 }
-            });  
+            });
             $.ajax({
-            url: '{{ route("search-products") }}',
-            method: 'POST',
-            data: { search: searchQuery },
-            success: function(response) {
-                $('.table-data').html(response);
-                if (response.status == 404) {
-                    $('.table-data').html('<p class="text-danger text-center">No Data Matched the Query</p>');
+                url: '{{ route('search-products') }}',
+                method: 'POST',
+                data: {
+                    search: searchQuery
+                },
+                success: function(response) {
+                    $('.table-data').html(response);
+                    if (response.status == 404) {
+                        $('.table-data').html(
+                            '<p class="text-danger text-center">No Data Matched the Query</p>');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error(error);
                 }
-            },
-            error: function(xhr, status, error) {
-                console.error(error);
-            }
+            });
         });
-    });
-</script>
+    </script>
 
-<script>
-$(document).ready(function() {
-    $('#sort_by').change(function() {
-        
-        var filterValue = $(this).val();
+    <script>
+        $(document).ready(function() {
+            $('#sort_by').change(function() {
+                var filterValue = $(this).val();
+                $.ajax({
+                    url: '{{ route('products.filter') }}',
+                    type: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        filter: filterValue
+                    },
+                    success: function(response) {
 
-        $.ajax({
-            url: '{{ route('products.filter') }}',
-            type: 'POST',
-            data: {
-                _token: '{{ csrf_token() }}',
-                filter: filterValue
-            },
-            success: function(response) {
-             
-                $('.table-data').html(response);
-            },
-            error: function(xhr) {
-                console.log(xhr.responseText);
-            }
-        });
-    });
-});
-</script>
-
-<script>
-$(document).on('click', '.delete', function () {
-    var productId = $(this).data('id');
-    var productName = $(this).data('product-name');
-
-    Swal.fire({
-        title: 'Delete '+productName+'?',
-        text: 'This action cannot be undone.',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Yes, delete it!',
-        cancelButtonText: 'No, cancel',
-        reverseButtons: true
-    }).then(function (result) {
-        if (result.isConfirmed) {
-            // User confirmed the delete action
-            deleteProduct(productId);
-        }
-    });
-});
-
-function deleteProduct(productId) {
-    $.ajaxSetup({
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        }
-    }); 
-
-    $.ajax({
-        url: '{{ route('products.delete') }}',
-        type: 'POST',
-        dataType: 'json',
-        data: {
-            'productID': productId,
-        },
-        success: function (response) {
-            if (response.success) {
-                Swal.fire('Deleted!', 'The product has been deleted.', 'success').then(function () {
-                $('.table-data').html(response);
-
+                        $('.table-data').html(response);
+                    },
+                    error: function(xhr) {
+                        console.log(xhr.responseText);
+                    }
                 });
-            } else {
-                Swal.fire('Error!', 'An error occurred while deleting the product.', 'error');
-            }
-        },
-        error: function () {
-            Swal.fire('Error!', 'An error occurred while making the request.', 'error');
-        }
-    });
-}
-</script>
+            });
+        });
+    </script>
 
-
-<script>
-    $(document).ready(function() {
-        $('.toggle-status').click(function(event) {
-            event.preventDefault();
+    <script>
+        $(document).on('click', '.delete', function() {
             var productId = $(this).data('id');
             var productName = $(this).data('product-name');
-            var status = $(this).data('product-status');
-            var action = (status == 1) ? 'inactivate' : 'activate';
-            var message = (status == 1) ? 'Are you sure you want to inactivate the product: ' + productName + '?' : 'Are you sure you want to activate the product: ' + productName + '?';
-// alert(message); return;
-            swal({
-                title: 'Delete '+productName+'?',
+
+            Swal.fire({
+                title: 'Delete ' + productName + '?',
                 text: 'This action cannot be undone.',
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Yes, delete it!',
                 cancelButtonText: 'No, cancel',
                 reverseButtons: true
-            }).then((confirm) => {
-                if (confirm) {
+            }).then(function(result) {
+                if (result.isConfirmed) {
+                    deleteProduct(productId);
+                }
+            });
+        });
 
+        function deleteProduct(productId) {
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+            $.ajax({
+                url: '{{ route('products.delete') }}',
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    'productID': productId,
+                },
+                success: function(response) {
+                    if (response.success) {
+                        Swal.fire('Deleted!', 'The product has been deleted.', 'success').then(function() {
+                            $('.table-data').html(response);
+
+                        });
+                    } else {
+                        Swal.fire('Error!', 'An error occurred while deleting the product.', 'error');
+                    }
+                },
+                error: function() {
+                    Swal.fire('Error!', 'An error occurred while making the request.', 'error');
+                }
+            });
+        }
+    </script>
+
+    <script>
+        $(document).ready(function() {
+            $('.toggle-status').click(function(event) {
+                event.preventDefault();
+                var productId = $(this).data('id');
+                var productName = $(this).data('product-name');
+                var status = $(this).data('product-status');
+                var action = (status == 1) ? 'inactivate' : 'activate';
+                var message = (status == 1) ? 'Are you sure you want to inactivate the product: ' +
+                    productName + '?' : 'Are you sure you want to activate the product: ' + productName +
+                    '?';
+                swal({
+                    title: 'Delete ' + productName + '?',
+                    text: 'This action cannot be undone.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, delete it!',
+                    cancelButtonText: 'No, cancel',
+                    reverseButtons: true
+                }).then((confirm) => {
+                    if (confirm) {
                         $.ajaxSetup({
                             headers: {
                                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                             }
-                        });                     
-                        
+                        });
                         $.ajax({
-                        url: '{{ route('products.toggle-status') }}',
-                        type: 'POST',
-                        data: {
-                            _token: '{{ csrf_token() }}',
-                            id: productId,
-                        },
-                        success: function(response) {
-                            swal('Success', response.message, 'success').then(() => {
-                                // Reload the page or perform any other desired action
-                                location.reload();
-                            });
-                        },
-                        error: function(xhr) {
-                            swal('Error', xhr.responseJSON.message, 'error');
-                        }
-                    });
-                }
+                            url: '{{ route('products.toggle-status') }}',
+                            type: 'POST',
+                            data: {
+                                _token: '{{ csrf_token() }}',
+                                id: productId,
+                            },
+                            success: function(response) {
+                                swal('Success', response.message, 'success').then(
+                                    () => {
+                                        location.reload();
+                                    });
+                            },
+                            error: function(xhr) {
+                                swal('Error', xhr.responseJSON.message, 'error');
+                            }
+                        });
+                    }
+                });
             });
+        });
+    </script>
+
+
+
+
+<script>
+    $(document).on('click', '.edit', function() {
+        var productId = $(this).data('id');
+        var productName = $(this).data('product-name');
+        var buyingPrice = $(this).data('buying-price');
+        var sellingPrice = $(this).data('selling-price');
+        var quantity = $(this).data('quantity');
+        var alertLevel = $(this).data('alert-level');
+
+        // Set values in the edit modal
+        $('#edit-product-id').val(productId);
+        $('#edit-product-name').val(productName);
+        $('#edit-buying-price').val(buyingPrice);
+        $('#edit-selling-price').val(sellingPrice);
+        $('#edit-quantity').val(quantity);
+        $('#edit-alert-level').val(alertLevel);
+
+        // Show the edit modal
+        $('#editProductModal').modal('show');
+    });
+
+    $('#edit-product-form').submit(function(event) {
+        event.preventDefault();
+
+        var productName = $('#edit-product-name').val();
+        var productId = $('#edit-product-id').val();
+        var buyingPrice = $('#edit-buying-price').val();
+        var sellingPrice = $('#edit-selling-price').val();
+        var quantity = $('#edit-quantity').val();
+        var alertLevel = $('#edit-alert-level').val();
+
+        // Disable the "Save Changes" button and show spinner
+        var saveChangesBtn = $('#saveChangesBtn');
+        saveChangesBtn.prop('disabled', true);
+        saveChangesBtn.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...');
+
+        // Perform AJAX request to update the product
+        $.ajax({
+            url: '{{ route('products.update') }}',
+            type: 'POST',
+            data: {
+                productId,
+                productName,
+                buying_price: buyingPrice,
+                selling_price: sellingPrice,
+                quantity: quantity,
+                alert_level: alertLevel,
+                _token: '{{ csrf_token() }}'
+            },
+            success: function(response) {
+                // Close the edit modal
+                $('#editProductModal').modal('hide');
+
+                // Show success message
+                toastr.success(response.message, 'Success');
+
+                // Reload the table data
+                $('.table-data').load(location.href + ' .table');
+            },
+            error: function(response) {
+                var errors = response.responseJSON;
+                var errorMessage = errors.message;
+                toastr.error(errorMessage, 'Error');
+            },
+            complete: function() {
+                // Enable the "Save Changes" button and restore its text
+                saveChangesBtn.prop('disabled', false);
+                saveChangesBtn.html('Save Changes');
+            }
         });
     });
 </script>
+
 
 
 @endsection

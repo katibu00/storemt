@@ -42,7 +42,7 @@
                         <td class="text-center">{{ number_format($product->buying_price, 0) }}</td>
                         <td class="text-center">{{ number_format($product->selling_price, 0) }}</td>
                         <td class="text-center">{{ number_format($product->quantity, 0) }}</td>
-                        <td class="text-center">{{ number_format($product->critical_level, 0) }}</td>
+                        <td class="text-center">{{ number_format($product->alert_level, 0) }}</td>
                         <td class="text-center">
                             <span class="badge {{ $product->status ? 'bg-success' : 'bg-danger' }}">
                                 {{ $product->status ? 'Active' : 'Inactive' }}
@@ -54,7 +54,12 @@
                                     aria-expanded="false"> Actions
                                 </button>
                                 <div class="dropdown-menu" aria-labelledby="actionDropdown{{ $product->id }}">
-                                    <a class="dropdown-item" href="">
+                                    <a class="dropdown-item edit" href="#" data-id="{{ $product->id }}"
+                                        data-product-name="{{ $product->name }}"
+                                        data-buying-price="{{ $product->buying_price }}"
+                                        data-selling-price="{{ $product->selling_price }}"
+                                        data-quantity="{{ $product->quantity }}"
+                                        data-alert-level="{{ $product->alert_level }}">
                                         <i class="fa fa-edit"></i> Edit
                                     </a>
                                     <a class="dropdown-item delete" href="#" data-id="{{ $product->id }}" data-product-name="{{ $product->name }}">

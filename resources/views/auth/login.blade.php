@@ -132,7 +132,7 @@
             </div>
             <button class="w-100 btn btn-lg btn-primary" type="submit" id="submit_btn">Sign in</button>
         </form>
-        <p class="mt-5 mb-3 text-muted">&copy; MyShopMate 2023</p>
+        <p class="mt-5 mb-3 text-muted">&copy; ShopMate 2023</p>
     </div>
 
     <script src="/jquery-3.6.3.min.js"></script>
