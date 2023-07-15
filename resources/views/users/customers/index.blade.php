@@ -24,6 +24,16 @@
 
                     <div class="card-body">
 
+                        @if($errors->any())
+                        <div class="alert alert-danger">
+                            <ul>
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
                        @include('users.customers.table')
 
                     </div>
@@ -48,7 +58,7 @@
 
                         <div class="form-group">
                             <label for="first_name" class="col-form-label">Customer Name:</label>
-                            <input type="text" class="form-control" id="first_name" name="first_name" required>
+                            <input type="text" class="form-control" id="first_name" name="name" required>
                             @error('first_name')
                                 <p class="text-danger">{{ $message }}</p>
                             @enderror
@@ -80,6 +90,7 @@
                     <h4 class="modal-title" id="myModalLabel">Add New Deposit</h4>
                     <button type="button" class="btn-close btn-sm" data-bs-dismiss="modal" aria-hidden="true"></button>
                 </div>
+
                 <form action="{{ route('customers.save.deposit') }}" method="POST">
                     @csrf
                     <div class="modal-body">

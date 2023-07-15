@@ -248,11 +248,13 @@
                         <h5>Best Selling Items over the last 7 days</h5>
                         <canvas id="bestSellersChart" width="400" height="250"></canvas>
                     </div>
+                    @if(auth()->user()->business->has_branches)
 
                     <div class="col-md-6">
                         <h5>Yesterday's Sales by Branches</h5>
                         <canvas id="salesByBranchChart" width="400" height="250"></canvas>
                     </div>
+                    @endif
                 </div>
                 </div>
 

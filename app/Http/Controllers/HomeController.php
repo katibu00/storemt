@@ -283,6 +283,7 @@ class HomeController extends Controller
         $startDate = $endDate->copy()->subDays(6);
         
         $salesData = Sale::where('branch_id', $branch_id)
+                        ->where('business_id', $business_id)
                         ->whereBetween('created_at', [$startDate, $endDate])
                         ->selectRaw('date(created_at) as date, sum(price * quantity - discount) as revenue')
                         ->groupBy('date')
@@ -296,6 +297,7 @@ class HomeController extends Controller
         $data['revenues'] = $salesData->pluck('revenue');
 
         $salesData = Sale::where('branch_id', $branch_id)
+                     ->where('business_id', $business_id)
                     ->whereNotIn('product_id', [1093, 1012])
                     ->whereBetween('created_at', [$startDate, $endDate])
                     ->select('product_id', DB::raw('SUM(quantity) as total_quantity'))
@@ -310,6 +312,7 @@ class HomeController extends Controller
 
 
         $salesByTime = DB::table('sales')
+        ->where('business_id', $business_id)
         ->select(DB::raw('HOUR(created_at) AS hour'), DB::raw('SUM(price*quantity - discount) AS amount'))
         ->whereDate('created_at', Carbon::today())
         ->where('branch_id', $branch_id)
@@ -338,11 +341,15 @@ class HomeController extends Controller
     $yesterday = Carbon::yesterday();
 
     $salesByBranch = DB::table('sales')
-        ->join('branches', 'sales.branch_id', '=', 'branches.id')
-        ->select('branches.name', DB::raw('SUM(price * quantity - discount) AS revenue'))
-        ->whereDate('sales.created_at', $yesterday)
-        ->groupBy('sales.branch_id')
-        ->get();
+                    ->join('branches', 'sales.branch_id', '=', 'branches.id')
+                    ->join('users', 'users.branch_id', '=', 'branches.id')
+                    ->select('branches.name', DB::raw('SUM(price * quantity - discount) AS revenue'))
+                    ->whereDate('sales.created_at', $yesterday)
+                    ->where('users.business_id', $business_id)
+                    ->groupBy('sales.branch_id')
+                    ->get();
+
+
 
     $pieChartData = [
         'labels' => [],
