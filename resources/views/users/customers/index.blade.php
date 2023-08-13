@@ -48,9 +48,9 @@
 
 
                         <div class="form-group">
-                            <label for="first_name" class="col-form-label">Customer Name:</label>
-                            <input type="text" class="form-control" id="first_name" name="first_name" required>
-                            @error('first_name')
+                            <label for="name" class="col-form-label">Customer Name:</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                            @error('name')
                                 <p class="text-danger">{{ $message }}</p>
                             @enderror
                         </div>

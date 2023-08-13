@@ -38,14 +38,27 @@ Route::get('/', function () {
             return redirect()->route('admin.home');
         }
         if (auth()->user()->usertype == 'cashier') {
-            return redirect()->route('sales.index');
+            return redirect()->route('cashier.home');
         }
     };
     // return view('ecom.index');
     return view('auth.login');
 });
 
-Route::get('/login', [AuthController::class, 'loginIndex'])->name('login');
+Route::get('/home', function () {
+    if (auth()->check()) {
+        if (auth()->user()->usertype == 'admin') {
+            return redirect()->route('admin.home');
+        }
+        if (auth()->user()->usertype == 'cashier') {
+            return redirect()->route('cashier.home');
+        }
+    };
+    // return view('ecom.index');
+    return view('auth.login');
+})->name('home');
+
+Route::get('/login', [AuthController::class, 'loginIndex'])->name('login')->middleware('guest');
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/change/password', [AuthController::class, 'changePasswordIndex'])->name('change.password');

@@ -171,7 +171,7 @@ class HomeController extends Controller
 
         //////////////
 
-        return view('cashier', $data);
+        return view('home.cashier', $data);
 
     }
 
@@ -354,29 +354,34 @@ class HomeController extends Controller
 
         //////////////
 
-        $yesterday = Carbon::yesterday();
+        if(auth()->user()->business->has_branches)
+        {
 
-        $salesByBranch = DB::table('sales')
-            ->join('branches', 'sales.branch_id', '=', 'branches.id')
-            ->select('branches.name', DB::raw('SUM(price * quantity - discount) AS revenue'))
-            ->whereDate('sales.created_at', $yesterday)
-            ->groupBy('sales.branch_id')
-            ->get();
+            $yesterday = Carbon::yesterday();
 
-        $pieChartData = [
-            'labels' => [],
-            'data' => [],
-            'backgroundColor' => [],
-        ];
-
-        // Prepare chart data
-        foreach ($salesByBranch as $sale) {
-            $pieChartData['labels'][] = $sale->name;
-            $pieChartData['data'][] = $sale->revenue;
-            $pieChartData['backgroundColor'][] = '#' . substr(md5(rand()), 0, 6);
+            $salesByBranch = DB::table('sales')
+                ->join('branches', 'sales.branch_id', '=', 'branches.id')
+                ->select('branches.name', DB::raw('SUM(price * quantity - discount) AS revenue'))
+                ->whereDate('sales.created_at', $yesterday)
+                ->groupBy('sales.branch_id')
+                ->get();
+    
+            $pieChartData = [
+                'labels' => [],
+                'data' => [],
+                'backgroundColor' => [],
+            ];
+    
+            // Prepare chart data
+            foreach ($salesByBranch as $sale) {
+                $pieChartData['labels'][] = $sale->name;
+                $pieChartData['data'][] = $sale->revenue;
+                $pieChartData['backgroundColor'][] = '#' . substr(md5(rand()), 0, 6);
+            }
+    
+            $data['pieChartData'] = $pieChartData;
+            
         }
-
-        $data['pieChartData'] = $pieChartData;
 
         return view('home.admin', $data);
 
