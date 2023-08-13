@@ -26,7 +26,10 @@ class SuppliersController extends Controller
             'phone' => 'required|unique:users,phone',
         ]);
 
+        $businessId = auth()->user()->business_id;
+
         $user = new User();
+        $user->business_id = $businessId;
         $user->name = $request->name;
         $user->phone = $request->phone;
         $user->usertype = 'supplier';

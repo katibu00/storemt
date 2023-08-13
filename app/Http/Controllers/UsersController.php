@@ -104,11 +104,9 @@ class UsersController extends Controller
 
     public function customerProfile($id)
     {
-        $businessId = auth()->user()->business_id;
-
         $data['user'] = User::select('id', 'name', 'balance')->where('id', $id)->first();
         $data['dates'] = Sale::select('product_id', 'receipt_no', 'created_at', 'status')
-            ->where('business_id', $businessId)
+            ->where('business_id', auth()->user()->business_id)
             ->where('payment_method', 'credit')
             ->where(function ($query) use ($id) {
                 $query->where('status', '!=', 'paid')
@@ -118,14 +116,14 @@ class UsersController extends Controller
             ->groupBy('receipt_no')
             ->orderBy('created_at', 'desc')
             ->get();
-        $data['payments'] = Payment::select('id', 'payment_amount', 'payment_method', 'created_at')->where('payment_type', 'credit')->where('customer_id', $id)->orderBy('created_at', 'desc')->take(10)->get();
+        // dd($data['dat÷es']);
+        $data['payments'] = Payment::select('id', 'payment_amount', 'payment_method', 'created_at')->where('business_id', auth()->user()->business_id)->where('payment_type', 'credit')->where('customer_id', $id)->orderBy('created_at', 'desc')->take(10)->get();
 
-
-        $data['shoppingHistory'] = Sale::where('business_id', $businessId)
-            ->where('customer_id', $id)
+        $data['shoppingHistory'] = Sale::where('customer_id', $id)
             ->orderBy('created_at', 'desc')
             ->get()
             ->groupBy(function ($item) {
+                // Group the sales by date
                 return $item->created_at->toDateString();
             });
 
@@ -284,6 +282,7 @@ class UsersController extends Controller
         return redirect()->back();
 
     }
+
     public function saveDeposit(Request $request)
     {
         $record = new Payment();
@@ -300,6 +299,21 @@ class UsersController extends Controller
         return redirect()->back();
 
     }
+
+    public function updateDeposit(Request $request)
+    {
+        $deposit = Payment::findOrFail($request->depositId);
+
+        $validatedData = $request->validate([
+            'payment_amount' => 'required|numeric',
+        ]);
+
+        $deposit->payment_amount = $validatedData['payment_amount'];
+        $deposit->save();
+
+        return response()->json(['message' => 'Deposit updated successfully']);
+    }
+
 
     public function loadReceipt(Request $request)
     {
@@ -326,13 +340,18 @@ class UsersController extends Controller
         ]);
     }
 
+   
+
+
     public function returnIndex(Request $request)
     {
         $id = $request->input('id');
-        $businessId = auth()->user()->business_id;
+        $sale = Sale::where('receipt_no',$id)->first();
+
         $data['sales'] = Sale::select('id', 'product_id', 'price', 'quantity', 'discount', 'status', 'payment_amount', 'customer_id', 'returned_qty')
             ->where('receipt_no', $id)
-            ->where('business_id', $businessId)
+            ->where('business_id', auth()->user()->business_id)
+            ->where('customer_id', $sale->customer_id)
             ->get();
 
         return view('users.customers.return', $data);
@@ -340,22 +359,52 @@ class UsersController extends Controller
     }
     public function returnStore(Request $request)
     {
+        $sale = Sale::find($request->sale_id[0]);
+
+        $sales = Sale::where('receipt_no', $sale->receipt_no)->where('customer_id', $sale->customer_id)->get(); 
+        $net_amount = 0;
+       
+        foreach($sales as $sale)
+       {
+        $net_amount += ($sale->quantity - $sale->returned_qty) * $sale->price - $sale->discount;
+       
+       }
+       $remaining_balance = $net_amount - $sales[0]->payment_amount;
+
+       $returned_amount = 0;
+       $productCount = count($request->sale_id);
+       if ($productCount != null) {
+           for ($i = 0; $i < $productCount; $i++) {
+
+                if($request->returned_qty[$i] != null)
+                {
+                    $returned_amount += $request->price[$i] * $request->returned_qty[$i];
+                }
+           }
+        }
+       
+      if($returned_amount > $remaining_balance)
+      {
+        Toastr::error('Returned Amount Cannot Exceed Remaining Balance');
+        return redirect()->back();
+
+      }
+
         $productCount = count($request->sale_id);
         if ($productCount != null) {
             for ($i = 0; $i < $productCount; $i++) {
-               
-                $sale = Sale::find($request->sale_id[$i]);
+
 
                 if ($request->returned_qty[$i] != '') {
-                   
+
                     if ($request->returned_qty[$i] <= $sale->quantity) {
 
                         $sale->returned_qty += $request->returned_qty[$i];
                         $sale->update();
 
                         $data = new Returns();
-                        $data->business_id = auth()->user()->business_id;
                         $data->branch_id = auth()->user()->branch_id;
+                        $data->business_id = auth()->user()->business_id;
                         $data->return_no = 'R' . $sale->receipt_no;
                         $data->product_id = $request->product_id[$i];
                         $data->price = $request->price[$i];
@@ -367,10 +416,11 @@ class UsersController extends Controller
                             $discount = $request->discount[$i] / $request->quantity[$i] * $request->returned_qty[$i];
                             $data->discount = $discount;
                         }
-                        $data->cashier_id = auth()->user()->id;
-                        $data->customer = null;
-                        $data->note = null;
-                        $data->payment_method = null;
+                        $data->staff_id = auth()->user()->id;
+                        $data->customer_id = $sale->customer_id;
+                        $data->business_id = auth()->user()->business_id;
+                        $data->channel = 'credit';
+                        $data->note = $sale->note;
                         $data->save();
 
                         $data = Product::find($request->product_id[$i]);
@@ -390,9 +440,10 @@ class UsersController extends Controller
             }
         }
         Toastr::success('Credit Sales was Updated Successfully');
-        return redirect()->route('customers.profile', $sale->name);
+        return redirect()->route('customers.profile', $sale->customer_id);
 
     }
+
 
     public function search(Request $request)
     {

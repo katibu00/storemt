@@ -78,6 +78,7 @@
                 visibility: visible;
             }
         }
+
         .button-group {
             white-space: nowrap;
         }
@@ -90,9 +91,8 @@
 @endsection
 @section('content')
 
-@php
-$business = App\Models\Business::select('name')->where('id', auth()->user()->business_id)->first();
-@endphp
+
+
 
     <!-- ============ Body content start ============= -->
     <section id="content">
@@ -103,7 +103,7 @@ $business = App\Models\Business::select('name')->where('id', auth()->user()->bus
                         <div class="col-md-8 mb-4">
                             <div class="card mb-2">
                                 <div class="card-header bg-transparent">
-                                    <marquee behavior="" direction="" class="text-danger"><b>Welcome to {{ $business->name }} @if($business->has_branches == 1 )- {{ auth()->user()->branch->name }} Branch @endif</b></marquee>
+                                    <marquee behavior="" direction="" class="text-danger"><b>Welcome to {{ auth()->user()->business->name }} @if(auth()->user()->business->has_branches == 1 )- {{ auth()->user()->branch->name }} Branch @endif</b></marquee>
                                 </div>
                                 <div class="card-body sales-table">
                                     <div class="table-responsive container">
@@ -184,7 +184,7 @@ $business = App\Models\Business::select('name')->where('id', auth()->user()->bus
                                                 <tr>
                                                     <td>
                                                         <label for="">Customer</label>
-                                                        <select class="form-select" name="customer_id" id="customer_id" required>
+                                                        <select class="form-select" name="customer_id" id="customer" required>
                                                             <option value=""></option>
                                                             @foreach ($customers as $customer)
                                                                 <option value="{{ $customer->id }}">
@@ -215,30 +215,45 @@ $business = App\Models\Business::select('name')->where('id', auth()->user()->bus
                                                         <label class="form-check-label nott" for="deposit"><i
                                                                 class="fa fa-credit-card text-info"></i> Deposit</label>
                                                     </div>
-                                                   
+
                                                 </div>
                                             </td>
+                                            <style>
+                                                p {
+                                                    margin: 0;
+                                                    font-weight: bold;
+                                                    font-size: 1.2em;
+                                                }
 
+                                                span {
+                                                    font-weight: normal;
+                                                }
+                                            </style>
 
                                             <td>
-                                                Credit Balance:
-                                                <input type="number" name="pre_balance" id="pre_balance" class="form-control mb-2" readonly>
+                                                <p>Credit Balance: <span id="pre_balance_span">0.00</span></p>
+                                                <input type="hidden" name="pre_balance" id="pre_balance"
+                                                    class="form-control mb-2" readonly>
                                             </td>
                                             <td>
-                                                Deposit Balance:
-                                                <input type="number" name="deposit_bal" id="deposit_bal" class="form-control mb-2" readonly>
+                                                <p>Deposit Balance: <span id="deposit_bal_span">0.00</span></p>
+                                                <input type="hidden" name="deposit_bal" id="deposit_bal"
+                                                    class="form-control mb-2" readonly>
                                             </td>
                                             <td>
-                                                New Balance:
-                                                <input type="number" name="new_balance" id="new_balance" class="form-control mb-2" readonly>
+                                                <p> <span id="balance_txt">New Balance:</span> <span
+                                                        id="new_balance_span">0.00</span></p>
+                                                <input type="hidden" name="new_balance" id="new_balance"
+                                                    class="form-control mb-2" readonly>
                                             </td>
+                                            
 
                                             <td>
                                                 <button type="submit" id="submitBtn"
                                                     class="btn btn-secondary btn-lg btn-block mt-2">Record Credit
                                                     Sale</button>
                                             </td>
-                                            
+
                                         </div>
                                     </div>
                                 </div>
@@ -258,6 +273,64 @@ $business = App\Models\Business::select('name')->where('id', auth()->user()->bus
 @endsection
 
 @section('js')
+
+
+    <script>
+        $(document).ready(function() {
+
+            const toggleLaborSwitch = document.getElementById('toggleLabor');
+        const laborCostField = document.getElementById('laborCostField');
+        const laborCostInput = document.getElementById('laborCost');
+
+        toggleLaborSwitch.addEventListener('change', function() {
+            if (this.checked) {
+                laborCostField.style.display = 'block';
+                laborCostInput.setAttribute('required', 'required');
+            } else {
+                laborCostField.style.display = 'none';
+                laborCostInput.removeAttribute('required');
+            }
+        });
+
+            $("input[name='payment_method']").change(function() {
+
+                var total = parseInt($("#total_hidden").val());
+                var paymentMethod = $("input[name='payment_method']:checked").val();
+                var preBalance = parseInt($("#pre_balance").val());
+                var depositBalance = parseInt($("#deposit_bal").val());
+                var balanceTxt = '';
+                var newBalance = 0;
+
+                if (isNaN(total)) {
+                    toastr.error("Please choose a product");
+                    $("input[name='payment_method']").prop("checked", false);
+                    return;
+                }
+
+
+                if (paymentMethod === "credit") {
+                    newBalance = preBalance + total;
+                    balanceTxt = "New Credit Balance";
+                } else if (paymentMethod === "deposit") {
+
+                    if (depositBalance < total) {
+                        toastr.error("Balance not enough. Please try another payment method");
+                        $("input[name='payment_method']").prop("checked", false);
+                        newBalance = 0;
+                        return;
+                    }
+                    balanceTxt = "New Deposit Balance";
+                    newBalance = depositBalance - total;
+                }
+
+                $("#new_balance_span").text("₦" + newBalance.toLocaleString());
+                $("#balance_txt").text(balanceTxt);
+
+            });
+        });
+    </script>
+
+
     <script>
         $('.product_id').select2();
 
@@ -281,7 +354,7 @@ $business = App\Models\Business::select('name')->where('id', auth()->user()->bus
             $(this).parent().parent().remove();
         });
 
-        $('#customer_id').select2();
+        $('#customer').select2();
 
 
         function TotalAmount() {
@@ -292,6 +365,7 @@ $business = App\Models\Business::select('name')->where('id', auth()->user()->bus
             });
             $('.total').html('&#8358;' + total.toLocaleString());
             $('#total_hidden').val(total);
+
         }
 
         $('.addMoreRow').delegate('.product_id', 'change', function() {
@@ -331,15 +405,10 @@ $business = App\Models\Business::select('name')->where('id', auth()->user()->bus
             var total_amount = (qty * price - disc);
             tr.find('.total_amount').val(total_amount);
             TotalAmount();
-        });
-
-        $('#paid_amount').keyup(function() {
-            var total = $('#total_hidden').val();
-            var paid_amount = $(this).val();
-            var tot = paid_amount - total;
-            $('#balance').val(tot);
+            $("input[name='payment_method']").prop("checked", false);
 
         });
+
 
 
         function PrintReceiptContent(receipt_no) {
@@ -365,24 +434,58 @@ $business = App\Models\Business::select('name')->where('id', auth()->user()->bus
 
                         html +=
                             '<tr style="text-align: center">' +
-                            '<td style="font-size: 12px;">' + (key + 1) + '</td>' +
                             '<td style="text-align: left"><span style="font-size: 12px;" >' + item
                             .product.name +
                             '</span></td>' +
                             '<td style="font-size: 12px;">' + item.quantity + '</td>' +
-                            '<td style="font-size: 12px;">' + item.quantity * item.price + '</td>' +
+                            '<td style="font-size: 12px;">' + item.price.toLocaleString() + '</td>' +
+                            '<td style="font-size: 12px;">' + (item.quantity * item.price)
+                            .toLocaleString() + '</td>' +
                             '</tr>';
                         total += item.quantity * item.price;
                     });
-                    html +=
-                        '<tr style="text-align: center">' +
-                        '<td></td>' +
-                        '<td colspan="2"><b>Total Amount</b></td>' +
-                        '<td><b>&#8358;' + total.toLocaleString() + '</b></td>' +
-                        '</tr>';
+
+
+                    if (res.items[0].labor_cost !== null) {
+                        html +=
+                            '<tr style="text-align: center">' +
+                            '<td></td>' +
+                            '<td colspan="2"><b>Sub-total</b></td>' +
+                            '<td><b>&#8358;' + total.toLocaleString() + '</b></td>' +
+                            '</tr>';
+
+                        html +=
+                            '<tr style="text-align: center">' +
+                            '<td></td>' +
+                            '<td colspan="2"><b>Labor Cost</b></td>' +
+                            '<td><b>&#8358;' + res.items[0].labor_cost.toLocaleString() + '</b></td>' +
+                            '</tr>';
+
+                        html +=
+                            '<tr style="text-align: center">' +
+                            '<td></td>' +
+                            '<td colspan="2"><b>Total</b></td>' +
+                            '<td><b>&#8358;' + (total+res.items[0].labor_cost).toLocaleString() +
+                            '</b></td>' +
+                            '</tr>';
+                        html +=
+                            '<tr style="text-align: center">' +
+                            '<td colspan="4"><i>Labor cost is separate, not related to the above company.</i></td>' +
+                            '</tr>';
+                    } else {
+                        html +=
+                            '<tr style="text-align: center">' +
+                            '<td></td>' +
+                            '<td colspan="2"><b>Total Amount</b></td>' +
+                            '<td><b>&#8358;' + total.toLocaleString() + '</b></td>' +
+                            '</tr>';
+                    }
+
+
 
                     html = $('#receipt_body').html(html);
-                    $('.tran_id').html('S' + res.items[0].receipt_no);
+                    $('.tran_id').html('C' + res.items[0].receipt_no);
+
 
                     var data = document.getElementById('print').innerHTML;
 
@@ -391,32 +494,17 @@ $business = App\Models\Business::select('name')->where('id', auth()->user()->bus
                     myReceipt.screenX = 0;
                     myReceipt.screenY = 0;
                     myReceipt.document.write(data);
-                    myReceipt.document.title = "Print Peceipt";
+                    myReceipt.document.title = "Print Estimate Certificate";
                     myReceipt.focus();
                     myReceipt.print();
+
                 },
                 error: function(xhr, ajaxOptions, thrownError) {
                     if (xhr.status === 419) {
                         Command: toastr["error"](
                             "Session expired. please login again."
                         );
-                        toastr.options = {
-                            closeButton: false,
-                            debug: false,
-                            newestOnTop: false,
-                            progressBar: false,
-                            positionClass: "toast-top-right",
-                            preventDuplicates: false,
-                            onclick: null,
-                            showDuration: "300",
-                            hideDuration: "1000",
-                            timeOut: "5000",
-                            extendedTimeOut: "1000",
-                            showEasing: "swing",
-                            hideEasing: "linear",
-                            showMethod: "fadeIn",
-                            hideMethod: "fadeOut",
-                        };
+                        
                         setTimeout(() => {
                             window.location.replace('{{ route('login') }}');
                         }, 2000);
@@ -455,14 +543,29 @@ $business = App\Models\Business::select('name')->where('id', auth()->user()->bus
                         if (res.status == 201) {
                             $.LoadingOverlay("hide");
                             $('#salesForm')[0].reset();
+                            $('.addMoreRow tr:not(:first)').remove();
                             $(".product_id").val('none').trigger('change');
                             updateTable();
+                            toastr.success(res.message, "Success", {
+                                timeOut: 3000
+                            });
                         }
                         if (res.status == 400) {
                             $.LoadingOverlay("hide");
-                            Command: toastr["warning"](res.message);
+
+                            toastr.warning(res.message, "Insuffient Balance", {
+                                timeOut: 3000
+                            });
                         }
+
+                    },
+                    error: function(xhr, status, error) {
+
+                        toastr.error("An error occurred: " + error, "Error", {
+                            timeOut: 3000
+                        });
                     }
+
                 })
             });
 
@@ -506,8 +609,8 @@ $business = App\Models\Business::select('name')->where('id', auth()->user()->bus
             //fetch balance
             $(document).on('change', '#customer', function() {
 
-                var customer_id = $('#customer_id').val();
-
+                var customer_id = $('#customer').val();
+                $("input[name='payment_method']").prop("checked", false);
 
                 $.ajaxSetup({
                     headers: {
@@ -526,13 +629,14 @@ $business = App\Models\Business::select('name')->where('id', auth()->user()->bus
                         if (res.status === 200) {
                             $('#pre_balance').val(res.balance);
                             $('#deposit_bal').val(res.deposits);
-
+                            $("#pre_balance_span").text("₦" + res.balance.toLocaleString());
+                            $("#deposit_bal_span").text("₦" + Number(res.deposits)
+                                .toLocaleString());
                         }
 
                         if (res.status === 404) {
                             $('#pre_balance').val('');
                             $('#deposit_bal').val('');
-
                         }
                     }
                 });
@@ -540,4 +644,5 @@ $business = App\Models\Business::select('name')->where('id', auth()->user()->bus
 
         });
     </script>
+
 @endsection

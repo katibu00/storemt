@@ -25,6 +25,7 @@
                     <th scope="col" class="text-center">Quantity</th>
                     <th scope="col" class="text-center">Alert Level</th>
                     <th scope="col" class="text-center">Status</th>
+                    <th scope="col" class="text-center">Awaiting Pickup</th>
                     <th scope="col" class="text-center">Action</th>
                 </tr>
             </thead>
@@ -47,6 +48,8 @@
                             <span class="badge {{ $product->status ? 'bg-success' : 'bg-danger' }}">
                                 {{ $product->status ? 'Active' : 'Inactive' }}
                             </span>
+                        </td>
+                        <td class="text-center">@if($product->pending_pickups == 0) <span class="badge bg-success">-</span> @else <span class="badge bg-danger">{{ number_format($product->pending_pickups,0) }}</span> @endif</td>
                         <td class="text-center">
                             <div class="dropdown">
                                 <button class="btn btn-sm btn-secondary dropdown-toggle" type="button"

@@ -5,7 +5,7 @@
         <div class="content-wrap">
             <div class="container">
                 <div class="card">
-
+                  
                     <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
                         <div class="col-12 col-md-4 mb-2 mb-md-0">
                             <h3 class="text-bgold fs-20">Customers ({{ auth()->user()->branch->name }} Branch)</h3>
@@ -17,15 +17,24 @@
                         </div>
 
                         <div class="col-12 col-md-2 mb-md-0">
-                            <button class="btn btn-lsm btn-primary text-white" data-bs-toggle="modal"
-                                data-bs-target=".addModal">+
+                            <button class="btn btn-lsm btn-primary text-white" data-bs-toggle="modal" data-bs-target=".addModal">+
                                 New Customer</button>
                         </div>
                     </div>
 
                     <div class="card-body">
 
-                        @include('users.customers.table')
+                        @if($errors->any())
+                        <div class="alert alert-danger">
+                            <ul>
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
+                       @include('users.customers.table')
 
                     </div>
 
@@ -49,7 +58,7 @@
 
                         <div class="form-group">
                             <label for="first_name" class="col-form-label">Customer Name:</label>
-                            <input type="text" class="form-control" id="first_name" name="first_name" required>
+                            <input type="text" class="form-control" id="first_name" name="name" required>
                             @error('first_name')
                                 <p class="text-danger">{{ $message }}</p>
                             @enderror
@@ -81,6 +90,7 @@
                     <h4 class="modal-title" id="myModalLabel">Add New Deposit</h4>
                     <button type="button" class="btn-close btn-sm" data-bs-dismiss="modal" aria-hidden="true"></button>
                 </div>
+
                 <form action="{{ route('customers.save.deposit') }}" method="POST">
                     @csrf
                     <div class="modal-body">
@@ -97,7 +107,7 @@
                                     <option value=""></option>
                                     <option value="cash">Cash</option>
                                     <option value="transfer">Transfer</option>
-                                    <option value="pos">POS</option>
+                                    <option value="POS">POS</option>
                                 </select>
                             </div>
                         </div>
@@ -119,47 +129,46 @@
 
 @section('js')
 
-    <script>
-        function handleSearch() {
-            var query = $('#searchInput').val();
+<script>
+    function handleSearch() {
+        var query = $('#searchInput').val();
+        
+        $('.pagination').hide();
 
-            $('.pagination').hide();
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+        $.ajax({
+            url: '{{ route('users.search') }}',
+            method: 'POST',
+            data: {
+                query: query
+            },
+            success: function(response) {
+                // Empty the table
+                $('.table').empty();
 
-            $.ajaxSetup({
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                // Check if the response is empty
+                if ($(response).find('tbody tr').length > 0) {
+                    $('.table').html(response);
+                } else {
+                    // Display a message if no rows are found
+                    $('.table tbody').empty().append('<tr><td colspan="9" class="text-center">No results found.</td></tr>');
+                    toastr.warning('No results found.');
                 }
-            });
-            $.ajax({
-                url: '{{ route('users.search') }}',
-                method: 'POST',
-                data: {
-                    query: query
-                },
-                success: function(response) {
-                    // Empty the table
-                    $('.table').empty();
 
-                    // Check if the response is empty
-                    if ($(response).find('tbody tr').length > 0) {
-                        $('.table').html(response);
-                    } else {
-                        // Display a message if no rows are found
-                        $('.table tbody').empty().append(
-                            '<tr><td colspan="9" class="text-center">No results found.</td></tr>');
-                        toastr.warning('No results found.');
-                    }
+            },
 
-                },
-
-                error: function(xhr) {
-                    // Handle the error response here
-                    console.log(xhr.responseText);
-                }
-            });
-        }
-        $('#searchInput').on('input', handleSearch);
-    </script>
+            error: function(xhr) {
+                // Handle the error response here
+                console.log(xhr.responseText);
+            }
+        });
+    }
+    $('#searchInput').on('input', handleSearch);
+</script>
 
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
@@ -206,7 +215,23 @@
                                     Command: toastr["success"](
                                         "User deleted Successfully."
                                     );
-                                   
+                                    toastr.options = {
+                                        closeButton: false,
+                                        debug: false,
+                                        newestOnTop: false,
+                                        progressBar: false,
+                                        positionClass: "toast-top-right",
+                                        preventDuplicates: false,
+                                        onclick: null,
+                                        showDuration: "300",
+                                        hideDuration: "1000",
+                                        timeOut: "5000",
+                                        extendedTimeOut: "1000",
+                                        showEasing: "swing",
+                                        hideEasing: "linear",
+                                        showMethod: "fadeIn",
+                                        hideMethod: "fadeOut",
+                                    };
                                     window.location.replace('{{ route('customers.index') }}');
 
                                 }
@@ -215,7 +240,23 @@
                                     Command: toastr["error"](
                                         "Error Occured"
                                     );
-                                   
+                                    toastr.options = {
+                                        closeButton: false,
+                                        debug: false,
+                                        newestOnTop: false,
+                                        progressBar: false,
+                                        positionClass: "toast-top-right",
+                                        preventDuplicates: false,
+                                        onclick: null,
+                                        showDuration: "300",
+                                        hideDuration: "1000",
+                                        timeOut: "5000",
+                                        extendedTimeOut: "1000",
+                                        showEasing: "swing",
+                                        hideEasing: "linear",
+                                        showMethod: "fadeIn",
+                                        hideMethod: "fadeOut",
+                                    };
                                 }
 
 

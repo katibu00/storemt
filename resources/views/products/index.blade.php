@@ -153,8 +153,11 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.js"></script>
+  
+   
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"
+        integrity="sha512-AA1Bzp5Q0K1KanKKmvN/4d3IRKVlv9PYgwFPvm32nPO6QS8yH1HO7LbgB1pgiOxPtfeg5zEn2ba64MUcqJx6CA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
 
 
@@ -259,54 +262,61 @@
         }
     </script>
 
-    <script>
-        $(document).ready(function() {
-            $('.toggle-status').click(function(event) {
-                event.preventDefault();
-                var productId = $(this).data('id');
-                var productName = $(this).data('product-name');
-                var status = $(this).data('product-status');
-                var action = (status == 1) ? 'inactivate' : 'activate';
-                var message = (status == 1) ? 'Are you sure you want to inactivate the product: ' +
-                    productName + '?' : 'Are you sure you want to activate the product: ' + productName +
-                    '?';
-                swal({
-                    title: 'Delete ' + productName + '?',
-                    text: 'This action cannot be undone.',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'Yes, delete it!',
-                    cancelButtonText: 'No, cancel',
-                    reverseButtons: true
-                }).then((confirm) => {
-                    if (confirm) {
-                        $.ajaxSetup({
-                            headers: {
-                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                            }
-                        });
-                        $.ajax({
-                            url: '{{ route('products.toggle-status') }}',
-                            type: 'POST',
-                            data: {
-                                _token: '{{ csrf_token() }}',
-                                id: productId,
-                            },
-                            success: function(response) {
-                                swal('Success', response.message, 'success').then(
-                                    () => {
-                                        location.reload();
-                                    });
-                            },
-                            error: function(xhr) {
-                                swal('Error', xhr.responseJSON.message, 'error');
-                            }
-                        });
-                    }
-                });
+
+<script>
+    $(document).ready(function() {
+        $('.toggle-status').click(function(event) {
+            event.preventDefault();
+            
+            // Extract data attributes from the clicked element
+            var productId = $(this).data('id');
+            var productName = $(this).data('product-name');
+            var status = $(this).data('product-status');
+            var action = (status == 1) ? 'inactivate' : 'activate';
+            var message = (status == 1) ? 'Are you sure you want to inactivate the product: ' + productName + '?' :
+                                            'Are you sure you want to activate the product: ' + productName + '?';
+
+            // Show a confirmation dialog using SweetAlert
+            swal({
+                title: 'Toggle Status for ' + productName + '?',
+                text: message,
+                icon: "warning",
+                buttons: true,
+                dangerMode: true,
+            }).then((willDelete) => {
+                if (willDelete) {
+                    // Set up CSRF token for AJAX requests
+                    $.ajaxSetup({
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        }
+                    });
+
+                    // Send an AJAX request to toggle the product status
+                    $.ajax({
+                        url: '{{ route('products.toggle-status') }}',
+                        type: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            id: productId,
+                        },
+                        success: function(response) {
+                            // Display success message and reload page
+                            swal('Success', response.message, 'success').then(() => {
+                                location.reload();
+                            });
+                        },
+                        error: function(xhr) {
+                            // Display error message
+                            swal('Error', xhr.responseJSON.message, 'error');
+                        }
+                    });
+                }
             });
         });
-    </script>
+    });
+</script>
+
 
 
 

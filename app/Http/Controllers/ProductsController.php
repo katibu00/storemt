@@ -110,9 +110,9 @@ class ProductsController extends Controller
     }
 
 
-    public function toggleStatus(Request $request, $id)
+    public function toggleStatus(Request $request)
     {
-        $product = Product::findOrFail($id);
+        $product = Product::findOrFail($request->id);
 
         // Toggle the status
         $product->status = $product->status == 1 ? 0 : 1;

@@ -15,8 +15,8 @@
                         <form action="{{route('suppliers.update',$user->id)}}" method="post">
                             @csrf
                             <div class="form-group">
-                                <label for="first_name" class="col-form-label">Name:</label>
-                                <input type="text" class="form-control" id="first_name" name="first_name" value="{{$user->first_name}}" required>
+                                <label for="name" class="col-form-label">Name:</label>
+                                <input type="text" class="form-control" id="name" name="name" value="{{$user->name}}" required>
                             </div>
                             <div class="form-group">
                                 <label for="phone" class="col-form-label">Phone:</label>

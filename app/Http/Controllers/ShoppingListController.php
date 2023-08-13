@@ -19,8 +19,8 @@ class ShoppingListController extends Controller
     public function index()
     {
 
-        $data['branches'] = Branch::all();
-        $data['suppliers'] = User::where('usertype', 'supplier')->get();
+        $data['branches'] = Branch::where('business_id', auth()->user()->business_id)->get();
+        $data['suppliers'] = User::where('business_id', auth()->user()->business_id)->where('usertype', 'supplier')->get();
         $data['stocks'] = [];
 
         return view('purchases.reorder.index', $data);
@@ -29,10 +29,11 @@ class ShoppingListController extends Controller
 
     public function allIndex()
     {
-        $data['branches'] = Branch::all();
-        $data['suppliers'] = User::where('usertype', 'supplier')->get();
+        $data['branches'] = Branch::where('business_id', auth()->user()->business_id)->get();
+        $data['suppliers'] = User::where('business_id', auth()->user()->business_id)->where('usertype', 'supplier')->get();
     
         $reorders = Reorder::select('reorder_no', DB::raw('MIN(created_at) as date'), 'supplier_id', 'status')
+            ->where('business_id', auth()->user()->business_id)
             ->groupBy('reorder_no', 'supplier_id', 'status')
             ->orderBy('date', 'desc')
             ->limit(20)
@@ -41,7 +42,7 @@ class ShoppingListController extends Controller
             $reorderGroups = [];
 
             foreach ($reorders as $reorder) {
-                $reorderItems = Reorder::where('reorder_no', $reorder->reorder_no)->get();
+                $reorderItems = Reorder::where('business_id', auth()->user()->business_id)->where('reorder_no', $reorder->reorder_no)->get();
             
                 $total = $reorderItems->sum(function ($item) {
                     return $item->quantity * $item->buying_price;

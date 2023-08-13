@@ -15,7 +15,7 @@
             @foreach ($customers as $key => $user)
                 <tr>
                     <th scope="row">{{ $key + 1 }}</th>
-                    <td>{{ $user->first_name }}</td>
+                    <td>{{ $user->name }}</td>
                     <td>{{ $user->phone }}</td>
                     <td>&#8358;{{ number_format($user->balance) }}</td>
                     @php

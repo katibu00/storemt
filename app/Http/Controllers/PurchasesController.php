@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Branch;
+use App\Models\Product;
 use App\Models\Purchase;
 use App\Models\Stock;
 use Brian2694\Toastr\Facades\Toastr;
@@ -11,20 +12,20 @@ use Illuminate\Http\Request;
 class PurchasesController extends Controller
 {
     function index(){
-        $data['branches'] = Branch::all();
+        $data['branches'] = Branch::where('business_id', auth()->user()->business_id)->get();
 
         $data['purchases'] = Purchase::select('date')->where('branch_id',0)->groupBy('date')->paginate(15);
         return view('purchases.index',$data);
     }
 
     function create(){
-        $data['branches'] = Branch::all();
-        $data['products'] = Stock::where('branch_id', auth()->user()->branch_id)->orderBy('name')->get();
+        $data['branches'] = Branch::where('business_id', auth()->user()->business_id)->get();
+        $data['products'] = Product::where('branch_id', auth()->user()->branch_id)->orderBy('name')->get();
         return view('purchases.create',$data);
     }
     function shopping_list(){
 
-        $data['branches'] = Branch::all();
+        $data['branches'] = Branch::where('business_id', auth()->user()->business_id)->get();
         $data['lows'] = [];
         return view('purchases.shopping_list',$data);
     }
@@ -36,7 +37,7 @@ class PurchasesController extends Controller
         $productCount = count($request->product_id);
         if($productCount != NULL){
             for ($i=0; $i < $productCount; $i++){
-                $data = Stock::find($request->product_id[$i]);
+                $data = Product::find($request->product_id[$i]);
                 $data->quantity += $request->quantity[$i];
                 if($request->buying_price[$i] != '')
                 {
@@ -50,7 +51,8 @@ class PurchasesController extends Controller
 
                 $data = new Purchase();
                 $data->branch_id = auth()->user()->branch_id;
-                $data->stock_id = $request->product_id[$i];
+                $data->business_id = auth()->user()->business_id;
+                $data->product_id = $request->product_id[$i];
                 $data->quantity = $request->quantity[$i];
                 $data->date = $request->date;
                 $data->save();
@@ -66,14 +68,14 @@ class PurchasesController extends Controller
 
     function details($date){
 
-        $data['purchases'] = Purchase::whereDate('date', $date)->get();
+        $data['purchases'] = Purchase::where('business_id', auth()->user()->business_id)->whereDate('date', $date)->get();
         return view('purchases.details',$data);
     }
 
     
     public function fetchStocks(Request $request)
     {
-        $stocks = Stock::where('branch_id', $request->branch_id)->get();
+        $stocks = Product::where('business_id', auth()->user()->business_id)->where('branch_id', $request->branch_id)->get();
         return response()->json([
         'status' => 200,
         'stocks' => $stocks,
@@ -84,7 +86,7 @@ class PurchasesController extends Controller
     public function fetchShopList(Request $request)
     {
         $lows = [];
-        $stocks = Stock::where('branch_id', $request->branch_id)->get();
+        $stocks = Product::where('business_id', auth()->user()->business_id)->where('branch_id', $request->branch_id)->get();
         foreach($stocks as $stock){
 
             if($stock->quantity <= $stock->critical_level){
@@ -96,7 +98,7 @@ class PurchasesController extends Controller
     }
     public function fetchPurchases(Request $request)
     {
-        $data['purchases'] = Purchase::select('date')->where('branch_id', $request->branch_id)->groupBy('date')->orderBy('created_at','desc')->paginate(15);
+        $data['purchases'] = Purchase::select('date')->where('business_id', auth()->user()->business_id)->where('branch_id', $request->branch_id)->groupBy('date')->orderBy('created_at','desc')->paginate(15);
         return view('purchases.table', $data)->render();
     }
 

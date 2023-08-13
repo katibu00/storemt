@@ -142,6 +142,10 @@ Route::group(['prefix' => 'sales', 'middleware' => ['auth', 'staff']], function 
 
     Route::post('/all/search', [SalesController::class, 'allSearch'])->name('sales.all.search');
     Route::post('/all/sort', [SalesController::class, 'filterSales'])->name('sales.all.sort');
+
+
+    Route::post('/awaiting_pickup', [SalesController::class, 'markAwaitingPickup'])->name('sales.awaiting_pickup');
+    Route::post('/deliver', [SalesController::class, 'markDeliver'])->name('sales.deliver');
 });
 
 Route::group(['prefix' => 'estimate', 'middleware' => ['auth', 'staff']], function () {
@@ -216,6 +220,7 @@ Route::group(['prefix' => 'customers', 'middleware' => ['auth', 'staff']], funct
     Route::get('/profile/{id}', [UsersController::class, 'customerProfile'])->name('customers.profile');
     Route::post('/save_payment', [UsersController::class, 'savePayment'])->name('customers.save.payment');
     Route::post('/save_deposit', [UsersController::class, 'saveDeposit'])->name('customers.save.deposit');
+    Route::post('/update_deposit', [UsersController::class, 'updateDeposit'])->name('customers.update.deposit');
     Route::post('/load-receipt', [UsersController::class, 'loadReceipt'])->name('load-receipt');
     Route::post('/delete', [UsersController::class, 'deleteCustomer'])->name('customers.delete');
 

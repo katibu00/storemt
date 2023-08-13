@@ -11,7 +11,7 @@
             <div class="row gx-5">
                 <div class="col-md-9">
                     <div class="heading-block border-0 d-flex justify-content-between">
-                        <h3>{{ $user->first_name . '\'s Profile' }}</h3>
+                        <h3>{{ $user->name . '\'s Profile' }}</h3>
                         <a href="{{ route('customers.index') }}" class="btn btn-sm btn-primary"><- customers list</a>
                     </div>
                     <div class="row">
@@ -25,14 +25,14 @@
                                         <button class="nav-link active" id="canvas-home-alt-tab"
                                             data-bs-toggle="pill" data-bs-target="#home-alt"
                                             type="button" role="tab" aria-controls="canvas-home-alt"
-                                            aria-selected="true"><i class="fas fa-shopping-cart"></i>
+                                            aria-selected="true"><i class="fa fa-credit-card"></i>
                                             Credit Purchases</a></button>
                                     </li>
                                     <li class="nav-item" role="presentation">
                                         <button class="nav-link" id="canvas-about-alt-tab"
                                             data-bs-toggle="pill" data-bs-target="#about-alt"
                                             type="button" role="tab" aria-controls="canvas-about-alt"
-                                            aria-selected="false"><i class="fa fa-credit-card"></i>
+                                            aria-selected="false"><i class="fa fa-cc-visa"></i>
                                             Credits Payments</a></button>
                                     </li>
     
@@ -46,7 +46,7 @@
                                         <button class="nav-link" id="active_deposits"
                                             data-bs-toggle="pill" data-bs-target="#deposit-alt"
                                             type="button" role="tab" aria-controls="deposit-alt"
-                                            aria-selected="false"><i class="fas fa-money-bill"></i>
+                                            aria-selected="false"><i class="fa fa-money"></i>
                                             Active Deposits</a></button>
                                     </li>
                                 </ul>
@@ -74,20 +74,19 @@
                                                         @php
                                                             $total_amount = 0;
                                                             $total_discount = 0;
-                                                            $sales = App\Models\Sale::select('product_id', 'price', 'quantity', 'discount', 'status', 'payment_amount')
+                                                            $sales = App\Models\Sale::select('Product_id', 'price', 'quantity', 'discount', 'status', 'payment_amount')
                                                                 ->where('receipt_no', $date->receipt_no)
-                                                                ->where('customer_id', $user->id)
-                                                                ->get(); 
+                                                                ->get();
                                                             $returns = App\Models\Returns::select('product_id', 'price', 'quantity', 'discount', 'payment_method')
                                                                 ->where('return_no', 'R'.$date->receipt_no)
                                                                 ->get();
                                                         @endphp
                                                         <tr>
                                                             <td>{{ $key3 + 1 }}</td>
-                                                            <td colspan="2">{{ $date->created_at->format('l, d F').' (S'.$date->receipt_no.')' }} </td>
+                                                            <td colspan="2">{{ $date->created_at->format('l, d F') }}</td>
                                                             <td></td>
                                                             <td></td>
-                                                            <td><a href="{{ route('users.return.index', ['id' => $date->receipt_no]) }}" class="btn btn-danger btn-sm"><i class="fas fa-undo text-white"></i></a></td>
+                                                            <td><a href="{{ route('users.return.index', ['id' => $date->receipt_no]) }}" class="btn btn-danger btn-sm"><i class="fa fa-rotate-left text-white"></i></a></td>
                                                         </tr>
                                                         @foreach ($sales as $key2 => $sale)
                                                             <tr @if ($sale->status == 'partial') class="bg-info text-white" @endif>
@@ -186,71 +185,70 @@
 
                                     <div class="tab-pane fade" id="contact-alt" role="tabpanel" aria-labelledby="canvas-contact-tab" tabindex="0">
                                         @php
-                                        $total_spent = 0;
-                                    @endphp
-                                    
-                                    @foreach($shoppingHistory as $date => $purchases)
+                                            $total_spent = 0;
+                                        @endphp
+                                        @foreach($shoppingHistory as $date => $purchases)
                                         <h3>{{ $date }}</h3>
                                         <div class="table-responsive border">
-                                            <table class="table">
-                                                <thead>
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th>S/N</th>
+                                                    <th>Item</th>
+                                                    <th>Price (&#8358;)</th>
+                                                    <th>Quantity</th>
+                                                    <th>Discount (&#8358;)</th>
+                                                    <th>Subtotal (&#8358;)</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @php
+                                                    $total_price = 0;
+                                                    $total_discount = 0;
+                                                @endphp
+                                                @foreach($purchases as $index => $purchase)
                                                     <tr>
-                                                        <th>S/N</th>
-                                                        <th>Item</th>
-                                                        <th>Price (&#8358;)</th>
-                                                        <th>Quantity</th>
-                                                        <th>Discount (&#8358;)</th>
-                                                        <th>Subtotal (&#8358;)</th>
+                                                        <td>{{ $index+1 }}</td>
+                                                        <td>{{ @$purchase->product->name }}</td>
+                                                        <td>{{ number_format($purchase->price,0) }}</td>
+                                                        <td>{{ number_format($purchase->quantity,0) }}</td>
+                                                        <td>{{ number_format($purchase->discount,0) }}</td>
+                                                        @php
+                                                            $total_spent +=  $purchase->price * $purchase->quantity - $purchase->discount; 
+                                                            $total_price +=  $purchase->price * $purchase->quantity - $purchase->discount; 
+                                                            $total_price += $purchase->discount;
+                                                        @endphp
+                                                        <td>{{ $purchase->price * $purchase->quantity - $purchase->discount }}</td>
                                                     </tr>
-                                                </thead>
-                                                <tbody>
-                                                    @php
-                                                        $total_price = 0;
-                                                        $total_discount = 0;
-                                                    @endphp
-                                                    @foreach($purchases as $index => $purchase)
-                                                        <tr>
-                                                            <td>{{ $index+1 }}</td>
-                                                            <td>{{ @$purchase->product->name }}</td>
-                                                            <td>{{ number_format($purchase->price, 0) }}</td>
-                                                            <td>{{ number_format($purchase->quantity, 0) }}</td>
-                                                            <td>{{ number_format($purchase->discount, 0) }}</td>
-                                                            @php
-                                                                $subtotal = $purchase->price * $purchase->quantity;
-                                                                $total_spent += $subtotal - $purchase->discount;
-                                                                $total_price += $subtotal - $purchase->discount;
-                                                                $total_discount += $purchase->discount;
-                                                            @endphp
-                                                            <td>{{ number_format($subtotal - $purchase->discount, 0) }}</td>
-                                                        </tr>
-                                                    @endforeach
-                                                    <tr>
-                                                        <td colspan="4"></td>
-                                                        <td><em>Total Discount</em></td>
-                                                        <td><strong>&#8358;{{ number_format($total_discount, 0) }}</strong></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td colspan="4"></td>
-                                                        <td><em>Net Total</em></td>
-                                                        <td><strong>&#8358;{{ number_format($total_price, 0) }}</strong></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td colspan="4"></td>
-                                                        <td><em>Payment Method</em></td>
-                                                        <td><strong>{{ @$purchase->payment_method }}</strong></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td colspan="4"></td>
-                                                        <td><em>Note</em></td>
-                                                        <td><strong>{{ @$purchase->note }}</strong></td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
+                                                   
+                                                @endforeach
+                                                <tr>
+                                                    <td colspan="4"></td>
+                                                    <td><em>Total Discount</em></td>
+                                                    <td><strong>&#8358;{{ number_format($purchase->price,0) }}</strong></td>
+                                                </tr>
+                                                <tr>
+                                                    <td colspan="4"></td>
+                                                    <td><em>Net Total</em></td>
+                                                    <td><strong>&#8358;{{ number_format($total_price,0) }}</strong></td>
+                                                </tr>
+                                                <tr>
+                                                    <td colspan="4"></td>
+                                                    <td><em>Payment Method</em></td>
+                                                    <td><strong>{{ @$purchase->payment_method }}</strong></td>
+                                                </tr>
+                                                <tr>
+                                                    <td colspan="4"></td>
+                                                    <td><em>Note</em></td>
+                                                    <td><strong>{{ @$purchase->note }}</strong></td>
+                                                </tr>
+                                                
+                                            </tbody>
+                                           
+                                        </table>
                                         </div>
                                     @endforeach
-                                    
-                                    <h3>Total Money Spent = &#8358;{{ number_format($total_spent, 0) }}</h3>
-                                    
+                                    <h3>Total Money Spent = &#8358;{{ number_format($total_spent,0) }}</h3>
                                     </div>
 
                                     <div class="tab-pane fade" id="about-alt" role="tabpanel" aria-labelledby="canvas-about-tab" tabindex="0">
@@ -304,7 +302,41 @@
     
                                     @if($total_deposit > 1)
     
-                                   @include('users.customers.deposit_table')
+                                    <div class="table-responsive border">
+                                        <table class=" table" style="width:100%; font-size: 12px;">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col">#</th>
+                                                    <th scope="col">Date</th>
+                                                    <th scope="col">Amount</th>
+                                                    <th scope="col">Method</th>
+                                                    <th></th>
+                                                </tr>
+                                            </thead>
+                                            @forelse ($deposits as $key => $deposit)
+                                                <tr>
+                                                    <td>{{ $key + 1 }}</td>
+                                                    <td>{{ $deposit->created_at->diffForHumans() }}</td>
+                                                    <td>{{ number_format($deposit->payment_amount, 0) }}</td>
+                                                    <td>{{ ucfirst($deposit->payment_method) }}</td>
+                                                    <td>
+                                                        <button type="button"
+                                                            onclick="PrintReceiptContent('{{ $deposit->id }}')"
+                                                            class="btn btn-secondary btn-sm"><i
+                                                                class="fa fa-print text-white"></i></button>
+                                                    </td>
+                                                </tr>
+    
+                                            @empty
+                                                <tr>
+                                                    <td colspan="4" class="bg-danger text-white"> No Records Found</td>
+                                                </tr>
+                                            @endforelse
+    
+                                            <tbody>
+                                            </tbody>
+                                        </table>
+                                    </div>
                                     @endif
 
                                     </div>
@@ -397,7 +429,6 @@
 
                                         $sales = App\Models\Sale::select('product_id', 'price', 'quantity', 'discount', 'status', 'payment_amount')
                                             ->where('receipt_no', $date->receipt_no)
-                                            ->where('customer_id', $user->id)
                                             ->get();
 
                                         $returns = App\Models\Returns::select('product_id', 'price', 'quantity', 'discount', 'payment_method')
@@ -525,78 +556,9 @@
         @include('users.customers.receipt')
     </div>
 </div>
-
-<!-- Edit Modal -->
-<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="editModalLabel">Edit Deposit Amount</h5>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <form id="editForm">
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label for="paymentAmount">Payment Amount</label>
-                        <input type="number" id="paymentAmount" name="payment_amount" class="form-control" required>
-                    </div>
-                    <!-- Add more input fields for editing other deposit details if needed -->
-                    <input type="hidden" id="depositId" name="deposit_id">
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
 @endsection
 
 @section('js')
-
-
-<script>
-    function editDeposit(depositId, paymentAmount) {
-        $('#editModal').find('#depositId').val(depositId);
-        $('#editModal').find('#paymentAmount').val(paymentAmount);
-
-        $('#editModal').modal('show');
-    }
-
-    $('#editForm').submit(function(e) {
-        e.preventDefault();
-
-        // Get the form data
-        var depositId = $('#editModal').find('#depositId').val();
-        var newPaymentAmount = $('#editModal').find('#paymentAmount').val();
-
-        $.ajaxSetup({
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            }
-        });
-        $.ajax({
-            url: '{{ route('customers.update.deposit') }}',
-            type: 'POST',
-            data: { 'depositId':depositId, 'payment_amount': newPaymentAmount },
-            success: function(response) {
-               
-                toastr.success(response.message);
-                $('#editModal').modal('hide');
-                $('.deposit_table').load(location.href + ' .deposit_table');
-            },
-            error: function(xhr) {
-
-            }
-        });
-    });
-</script>
-
-
 
 <script>
     jQuery( "#tabs-profile" ).on( "tabsactivate", function( event, ui ) {
@@ -696,7 +658,23 @@
                     Command: toastr["error"](
                         "Session expired. please login again."
                     );
-                   
+                    toastr.options = {
+                        closeButton: false,
+                        debug: false,
+                        newestOnTop: false,
+                        progressBar: false,
+                        positionClass: "toast-top-right",
+                        preventDuplicates: false,
+                        onclick: null,
+                        showDuration: "300",
+                        hideDuration: "1000",
+                        timeOut: "5000",
+                        extendedTimeOut: "1000",
+                        showEasing: "swing",
+                        hideEasing: "linear",
+                        showMethod: "fadeIn",
+                        hideMethod: "fadeOut",
+                    };
                     setTimeout(() => {
                         window.location.replace('{{ route('login') }}');
                     }, 2000);

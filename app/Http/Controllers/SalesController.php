@@ -336,4 +336,48 @@ class SalesController extends Controller
         return view('sales.all_table', $data)->render();
     }
 
+    public function markAwaitingPickup(Request $request)
+    {
+        $receiptNo = $request->receiptNo;
+
+        $sales = Sale::where('receipt_no', $receiptNo)->get();
+
+        foreach ($sales as $sale) {
+            $sale->collected = 0;
+            $sale->save();
+
+            $stock = Product::find($sale->product_id);
+            $stock->pending_pickups += $sale->quantity;
+            $stock->save();
+        }
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Items marked as awaiting pickup successfully.',
+        ]);
+    }
+
+    public function markDeliver(Request $request)
+    {
+        $receiptNo = $request->receiptNo;
+
+        $sales = Sale::where('receipt_no', $receiptNo)
+            ->where('collected', 0)
+            ->get();
+
+        foreach ($sales as $sale) {
+            $sale->collected = 1;
+            $sale->update();
+
+            $stock = Product::find($sale->product_id);
+            $stock->pending_pickups -= $sale->quantity;
+            $stock->update();
+        }
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Sales marked as delivered successfully',
+        ]);
+    }
+
 }

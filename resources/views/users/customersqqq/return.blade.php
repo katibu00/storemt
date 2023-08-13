@@ -14,7 +14,6 @@
                         <form action="{{ route('users.return.index') }}" method="post">
                             @csrf
                         <div class="table-responsive">
-
                             <table class=" table"
                                 style="width:100%">
                                 <thead>
@@ -49,7 +48,7 @@
                                 </tbody>
 
                             </table>
-                            <input type="hidden" name="customer_id" value="{{ $sales[0]->customer_id }}"/>
+                            <input type="hidden" name="customer_id" value="{{ $sales[0]->customer_name }}"/>
                         </div>
                         <button type="submit" class="btn btn-secondary">Submit</button>
                         </form>
