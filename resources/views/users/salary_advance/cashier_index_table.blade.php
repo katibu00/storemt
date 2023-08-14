@@ -13,7 +13,7 @@
         @foreach ($advances as $key => $advance)
             <tr>
                 <th scope="row">{{ $key + 1 }}</th>
-                <th scope="row">{{ @$advance->staff->first_name.' '.@$advance->staff->last_name }}</th>
+                <th scope="row">{{ @$advance->staff->name }}</th>
                 <td>{{ $advance->created_at->diffForHumans() }}</td>
                 <td>{{ number_format($advance->amount, 0) }}</td>
                 <td>

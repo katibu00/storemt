@@ -15,7 +15,7 @@
             @foreach ($customers as $key => $user)
                 <tr>
                     <th scope="row">{{ $key + 1 }}</th>
-                    <td>{{ $user->first_name }}</td>
+                    <td>{{ $user->name }}</td>
                     <td>{{ $user->phone }}</td>
                     <td>&#8358;{{ number_format($user->balance) }}</td>
                     @php
@@ -41,7 +41,7 @@
                         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                             <a class="dropdown-item" href="{{ route('customers.profile', $user->id) }}">Go to Profile</a>
                             <div class="dropdown-divider"></div>
-                            <button class="dropdown-item deleteItem" data-id="{{ $user->id }}" data-name="{{ $user->first_name }}">Delete User</button>
+                            <button class="dropdown-item deleteItem" data-id="{{ $user->id }}" data-name="{{ $user->name }}">Delete User</button>
                         </div>
                     </div>
                 </td>

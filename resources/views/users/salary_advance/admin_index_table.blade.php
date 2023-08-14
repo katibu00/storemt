@@ -19,7 +19,7 @@
            
                 <tr>
                     <th scope="row">{{ $key + 1 }}</th>
-                    <td>{{ $staff->first_name.' '. $staff->last_name }}</td>
+                    <td>{{ $staff->name }}</td>
                      <td colspan="4"></td>
                 </tr>
                 @php

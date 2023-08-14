@@ -22,7 +22,7 @@
                                     <option value="all">All</option>
                                     @foreach ($staffs as $staff)
                                         <option value="{{ $staff->id }}">
-                                            {{ $staff->first_name . ' ' . $staff->last_name }}
+                                            {{ $staff->name }}
                                         </option>
                                     @endforeach
                                 </select>

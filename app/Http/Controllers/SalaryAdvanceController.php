@@ -25,6 +25,7 @@ class SalaryAdvanceController extends Controller
     public function cashierStore(Request $request)
     {
         $new = new SalaryAdvance();
+        $new->business_id = auth()->user()->business_id;
         $new->cashier_id = auth()->user()->id;
         $new->staff_id = $request->staff_id;
         $new->amount = $request->amount;

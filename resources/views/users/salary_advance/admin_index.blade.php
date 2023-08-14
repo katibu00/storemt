@@ -32,17 +32,17 @@
                         @csrf
                         <div class="modal-body">
                             <div class="form-group">
-                                <label for="first_name" class="col-form-label">Staff:</label>
+                                <label for="" class="col-form-label">Staff:</label>
                                 <select class="form-select" name="staff_id">
                                     <option value=""></option>
                                     @foreach ($staffs as $staff)
-                                    <option value="{{ $staff->id }}">{{ $staff->first_name.' '.$staff->last_name }}</option>
+                                    <option value="{{ $staff->id }}">{{ $staff->name }}</option>
                                     @endforeach
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label for="first_name" class="col-form-label">Amount:</label>
-                                <input type="number" class="form-control" id="first_name" name="amount" required>
+                                <label for="amount" class="col-form-label">Amount:</label>
+                                <input type="number" class="form-control" id="amount" name="amount" required>
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -94,24 +94,8 @@
                             if(res.status == 200)
                             {
                                 Command: toastr["success"](res.message);
-                                    toastr.options = {
-                                        closeButton: false,
-                                        debug: false,
-                                        newestOnTop: false,
-                                        progressBar: false,
-                                        positionClass: "toast-top-right",
-                                        preventDuplicates: false,
-                                        onclick: null,
-                                        showDuration: "300",
-                                        hideDuration: "1000",
-                                        timeOut: "5000",
-                                        extendedTimeOut: "1000",
-                                        showEasing: "swing",
-                                        hideEasing: "linear",
-                                        showMethod: "fadeIn",
-                                        hideMethod: "fadeOut",
-                                    };
-                                    $('.table').load(location.href + ' .table');
+                                   
+                                $('.table').load(location.href + ' .table');
 
                             }else
                             {
@@ -119,23 +103,7 @@
                             Command: toastr["error"](
                             "Error Occured"
                                 );
-                                toastr.options = {
-                                    closeButton: false,
-                                    debug: false,
-                                    newestOnTop: false,
-                                    progressBar: false,
-                                    positionClass: "toast-top-right",
-                                    preventDuplicates: false,
-                                    onclick: null,
-                                    showDuration: "300",
-                                    hideDuration: "1000",
-                                    timeOut: "5000",
-                                    extendedTimeOut: "1000",
-                                    showEasing: "swing",
-                                    hideEasing: "linear",
-                                    showMethod: "fadeIn",
-                                    hideMethod: "fadeOut",
-                                };
+                               
                             }
                             
 
@@ -180,24 +148,8 @@
                             if(res.status == 200)
                             {
                                 Command: toastr["success"](res.message);
-                                    toastr.options = {
-                                        closeButton: false,
-                                        debug: false,
-                                        newestOnTop: false,
-                                        progressBar: false,
-                                        positionClass: "toast-top-right",
-                                        preventDuplicates: false,
-                                        onclick: null,
-                                        showDuration: "300",
-                                        hideDuration: "1000",
-                                        timeOut: "5000",
-                                        extendedTimeOut: "1000",
-                                        showEasing: "swing",
-                                        hideEasing: "linear",
-                                        showMethod: "fadeIn",
-                                        hideMethod: "fadeOut",
-                                    };
-                                    $('.table').load(location.href + ' .table');
+                                    
+                                $('.table').load(location.href + ' .table');
 
                             }else
                             {
@@ -205,23 +157,7 @@
                             Command: toastr["error"](
                             "Error Occured"
                                 );
-                                toastr.options = {
-                                    closeButton: false,
-                                    debug: false,
-                                    newestOnTop: false,
-                                    progressBar: false,
-                                    positionClass: "toast-top-right",
-                                    preventDuplicates: false,
-                                    onclick: null,
-                                    showDuration: "300",
-                                    hideDuration: "1000",
-                                    timeOut: "5000",
-                                    extendedTimeOut: "1000",
-                                    showEasing: "swing",
-                                    hideEasing: "linear",
-                                    showMethod: "fadeIn",
-                                    hideMethod: "fadeOut",
-                                };
+                                
                             }
                             
 

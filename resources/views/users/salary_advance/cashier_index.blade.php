@@ -34,17 +34,17 @@
                     @csrf
                     <div class="modal-body">
                         <div class="form-group">
-                            <label for="first_name" class="col-form-label">Staff:</label>
+                            <label for="amount" class="col-form-label">Staff:</label>
                             <select class="form-select" name="staff_id">
                                 <option value=""></option>
                                 @foreach ($staffs as $staff)
-                                <option value="{{ $staff->id }}">{{ $staff->first_name.' '.$staff->last_name }}</option>
+                                <option value="{{ $staff->id }}">{{ $staff->name }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="first_name" class="col-form-label">Amount:</label>
-                            <input type="number" class="form-control" id="first_name" name="amount" required>
+                            <label for="amount" class="col-form-label">Amount:</label>
+                            <input type="number" class="form-control" id="amount" name="amount" required>
                         </div>
                     </div>
                     <div class="modal-footer">
