@@ -65,7 +65,7 @@ class ExpensesController extends Controller
                 $data->amount = $request->amount[$i];
                 $data->description = $request->description[$i];
                 $data->payment_method = $request->payment_method[$i];
-                $data->staff_id = $user->id;
+                $data->payee_id = $user->id;
                 $data->date = $request->date;
                 $data->save();
             }
