@@ -668,7 +668,7 @@
                 var html = '';
                 var total = 0;
 
-                html += `The payment of &#8358;${res.payment.payment_amount.toLocaleString()} was paid to El-Habib plumbing on ${res.date} in settlement of Sales Receipt ${res.payment.receipt_nos}. <br/> Your Updated Current Balance is &#8358;${res.balance.toLocaleString()}`
+                html += `The payment of &#8358;${res.payment.payment_amount.toLocaleString()} was paid to the above named business on ${res.date} in settlement of Sales Receipt ${res.payment.receipt_nos}. <br/> Your Updated Current Balance is &#8358;${res.balance.toLocaleString()}`
                 
                 // html +=
                 //     '<tr style="text-align: center">' +

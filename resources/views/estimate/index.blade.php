@@ -15,18 +15,18 @@
         }
 
         @media (max-width: 767px) {
-            table.table thead {
+            .styled-table.table thead {
                 display: none;
             }
 
-            table.table tbody td {
+            .styled-table.table tbody td {
                 display: block;
                 width: 100%;
                 text-align: left;
                 border-bottom: 1px solid #ddd;
             }
 
-            table.table tbody td:before {
+            .styled-table.table tbody td:before {
                 content: attr(data-label);
                 float: left;
                 font-weight: bold;
@@ -126,7 +126,7 @@
                             </div>
                             <div class="card-body sales-table">
                                 <div class="table-responsive">
-                                    <table class="table table-bordered text-center">
+                                    <table class="table styled-table table-bordered text-center">
                                         <thead>
                                             <tr>
                                                 <th style="width: 2%"></th>

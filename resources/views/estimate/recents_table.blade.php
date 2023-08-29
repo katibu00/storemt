@@ -6,7 +6,7 @@
                     <tr>
                         <th>#</th>
                         <th>Estimate #</th>
-                        <th>Customer Name</th>
+                        <th>Customer</th>
                         <th>Amount</th>
                         <th>Action</th>
                     </tr>

@@ -280,6 +280,7 @@ class SalesController extends Controller
         $data['recents'] = Sale::select('product_id', 'receipt_no')->where('business_id', auth()->user()->business_id)->where('branch_id', auth()->user()->branch_id)->whereDate('created_at', Carbon::today())->where('staff_id', auth()->user()->id)->groupBy('receipt_no')->orderBy('created_at', 'desc')->take(4)->get();
         return view('sales.recent_sales_table', $data)->render();
     }
+    
     public function loadReceipt(Request $request)
     {
         $items = Sale::with('product')->where('business_id', auth()->user()->business_id)->where('branch_id', auth()->user()->branch_id)->where('receipt_no', $request->receipt_no)->get();

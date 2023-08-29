@@ -16,18 +16,18 @@
     }
 
     @media (max-width: 767px) {
-        table.table thead {
+        .styled-table.table thead {
             display: none;
         }
 
-        table.table tbody td {
+        .styled-table.table tbody td {
             display: block;
             width: 100%;
             text-align: left;
             border-bottom: 1px solid #ddd;
         }
 
-        table.table tbody td:before {
+        .styled-table.table tbody td:before {
             content: attr(data-label);
             float: left;
             font-weight: bold;
@@ -133,7 +133,7 @@
                                 </div>
                                 <div class="card-body sales-table">
                                     <div class="table-responsive container">
-                                        <table class="table table-bordered text-center">
+                                        <table class="table styled-table table-bordered text-center">
                                             <thead>
                                                 <tr>
                                                     <th style="width: 2%"></th>
@@ -169,7 +169,7 @@
                                                     </td>
                                                     <td>
                                                         <input type="number" readonly name="price[]" id="price"
-                                                            class="form-control price">
+                                                            class="form-control disabled-input price">
                                                     </td>
                                                     <td>
                                                         <input type="number" name="discount[]" placeholder="Discount"
@@ -177,7 +177,7 @@
                                                     </td>
                                                     <td>
                                                         <input type="number" readonly name="total_amount[]"
-                                                            id="total_amount" class="form-control total_amount">
+                                                            id="total_amount" class="form-control disabled-input total_amount">
                                                     </td>
                                                     <td class="button-group">
                                                         <a href="#"
@@ -367,9 +367,9 @@
                 '<td><select class="form-select product_id" name="product_id[]" required>' + product +
                 '</select><input type="hidden" class="product_qty" value=""></td>' +
                 '<td><input type="number" name="quantity[]" placeholder="Qty" step="any" class="form-control quantity" required></td>' +
-                '<td><input type="number" readonly name="price[]" class="form-control price"></td>' +
+                '<td><input type="number" readonly name="price[]" class="form-control disabled-input price"></td>' +
                 '<td><input type="number" name="discount[]" placeholder="Dicount" class="form-control discount"></td>' +
-                '<td><input type="number" readonly name="total_amount[]" class="form-control total_amount"></td>' +
+                '<td><input type="number" readonly name="total_amount[]" class="form-control disabled-input total_amount"></td>' +
                 '<td class="button-group"><a class="btn btn-danger btn-sm mx-1 remove_row rounded-circle"><i class="fa fa-times-circle"></i></a> <a href="#" class="btn btn-success btn-sm add_row rounded-circle"><i class="fa fa-plus"></i></a></td></tr>';
             $('.addMoreRow').append(tr);
             $('.product_id').select2();
