@@ -20,6 +20,8 @@ class SalesController extends Controller
         $data['recents'] = Sale::select('product_id', 'receipt_no')
             ->whereDate('created_at', Carbon::today())
             ->where('staff_id', $user->id)
+            ->where('business_id', $user->business_id)
+            ->where('branch_id', $user->branch_id)
             ->groupBy('receipt_no')
             ->orderBy('created_at', 'desc')
             ->take(4)
@@ -37,6 +39,8 @@ class SalesController extends Controller
 
         $data['recents'] = Sale::select('product_id', 'receipt_no', 'customer_id')
             ->whereDate('created_at', Carbon::today())
+            ->where('business_id', auth()->user()->business_id)
+            ->where('branch_id', $user->branch_id)
             ->where('staff_id', auth()->user()->id)
             ->groupBy('receipt_no')
             ->orderBy('created_at', 'desc')
@@ -57,6 +61,7 @@ class SalesController extends Controller
 
         $user = User::select('balance')->where('id', $request->customer_id)->first();
         $deposits = Payment::select('payment_amount')
+            ->where('business_id', auth()->user()->business_id)
             ->where('customer_id', $request->customer_id)
             ->where('payment_type', 'deposit')
             ->sum('payment_amount');
@@ -138,7 +143,7 @@ class SalesController extends Controller
                     $total_price += ($request->price[$i] * $request->quantity[$i]) - $request->discount[$i];
                 }
             }
-            $deposits = Payment::select('payment_amount')->where('customer_id', $request->customer_id)->where('payment_type', 'deposit')->sum('payment_amount');
+            $deposits = Payment::select('payment_amount')->where('business_id', auth()->user()->business_id)->where('customer_id', $request->customer_id)->where('payment_type', 'deposit')->sum('payment_amount');
             if ($total_price > $deposits) {
                 return response()->json([
                     'status' => 400,
@@ -272,12 +277,12 @@ class SalesController extends Controller
 
     public function refresh(Request $request)
     {
-        $data['recents'] = Sale::select('product_id', 'receipt_no')->where('business_id', auth()->user()->business_id)->whereDate('created_at', Carbon::today())->where('staff_id', auth()->user()->id)->groupBy('receipt_no')->orderBy('created_at', 'desc')->take(4)->get();
+        $data['recents'] = Sale::select('product_id', 'receipt_no')->where('business_id', auth()->user()->business_id)->where('branch_id', auth()->user()->branch_id)->whereDate('created_at', Carbon::today())->where('staff_id', auth()->user()->id)->groupBy('receipt_no')->orderBy('created_at', 'desc')->take(4)->get();
         return view('sales.recent_sales_table', $data)->render();
     }
     public function loadReceipt(Request $request)
     {
-        $items = Sale::with('product')->where('business_id', auth()->user()->business_id)->where('receipt_no', $request->receipt_no)->get();
+        $items = Sale::with('product')->where('business_id', auth()->user()->business_id)->where('branch_id', auth()->user()->branch_id)->where('receipt_no', $request->receipt_no)->get();
         return response()->json([
             'status' => 200,
             'items' => $items,
@@ -286,8 +291,8 @@ class SalesController extends Controller
 
     public function allIndex()
     {
-        $data['sales'] = Sale::select('product_id', 'receipt_no')->where('branch_id', auth()->user()->branch_id)->groupBy('receipt_no')->orderBy('created_at', 'desc')->paginate(10);
-        $data['staffs'] = User::whereIn('usertype', ['admin', 'cashier'])->where('branch_id', auth()->user()->branch_id)->get();
+        $data['sales'] = Sale::select('product_id', 'receipt_no')->where('business_id', auth()->user()->business_id)->where('branch_id', auth()->user()->branch_id)->groupBy('receipt_no')->orderBy('created_at', 'desc')->paginate(10);
+        $data['staffs'] = User::whereIn('usertype', ['admin', 'cashier'])->where('business_id', auth()->user()->business_id)->where('branch_id', auth()->user()->branch_id)->get();
 
         return view('sales.all_index', $data);
     }
@@ -299,6 +304,7 @@ class SalesController extends Controller
         // Perform the search query on the Sale model
         $data['sales'] = Sale::select('product_id', 'receipt_no')
             ->where('branch_id', auth()->user()->branch_id)
+            ->where('business_id', auth()->user()->business_id)
             ->where('receipt_no', 'LIKE', '%' . $query . '%')
             ->groupBy('receipt_no')
             ->orderBy('created_at', 'desc')
@@ -318,7 +324,8 @@ class SalesController extends Controller
         $transactionType = $request->input('transaction_type');
 
         $query = Sale::select('product_id', 'receipt_no')
-            ->where('branch_id', auth()->user()->branch_id);
+            ->where('branch_id', auth()->user()->branch_id)
+            ->where('business_id', auth()->user()->business_id);
 
         if ($cashierId && $cashierId != 'all') {
             $query->where('staff_id', $cashierId);
@@ -340,7 +347,8 @@ class SalesController extends Controller
     {
         $receiptNo = $request->receiptNo;
 
-        $sales = Sale::where('receipt_no', $receiptNo)->get();
+        $sales = Sale::where('receipt_no', $receiptNo)->where('business_id', auth()->user()->business_id)->get()->where('branch_id', auth()->user()->branch_id)
+        ;
 
         foreach ($sales as $sale) {
             $sale->collected = 0;
@@ -361,7 +369,8 @@ class SalesController extends Controller
     {
         $receiptNo = $request->receiptNo;
 
-        $sales = Sale::where('receipt_no', $receiptNo)
+        $sales = Sale::where('receipt_no', $receiptNo)->where('business_id', auth()->user()->business_id)
+            ->where('branch_id', auth()->user()->branch_id)
             ->where('collected', 0)
             ->get();
 

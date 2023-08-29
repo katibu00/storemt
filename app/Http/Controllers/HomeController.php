@@ -12,7 +12,7 @@ use App\Models\Returns;
 use App\Models\Sale;
 use App\Models\Stock;
 use App\Models\User;
-use Brian2694\Toastr\Toastr;
+use Brian2694\Toastr\Facades\Toastr;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -194,26 +194,34 @@ class HomeController extends Controller
         $branch_id = auth()->user()->branch_id;
         $data['branches'] = Branch::where('business_id',$business_id)->get();
 
-        if(isset($request->date))
-        {
-            $todaySales = Sale::where('business_id', $business_id)->where('branch_id', $branch_id)->whereNotIn('product_id', [1093, 1012])->whereDate('created_at', $request->date)->get();
-            $todayReturns = Returns::where('business_id', $business_id)->where('branch_id', $branch_id)->whereNull('channel')->whereDate('created_at', $request->date)->get();
-            $todayExpenses = Expense::where('business_id', $business_id)->where('branch_id', $branch_id)->whereDate('created_at', $request->date)->get();
-            $creditPayments = Payment::where('business_id', $business_id)->where('branch_id', $branch_id)->whereNull('payment_type')->whereDate('created_at', $request->date)->get();
-            $estimates = Estimate::where('business_id', $business_id)->where('branch_id', $branch_id)->whereDate('created_at', $request->date)->get();
-            $purchases = Purchase::select('product_id', 'quantity')->where('branch_id', $branch_id)->where('business_id', $business_id)->whereDate('created_at', $request->date)->get();
-            $data['date'] = $request->date;
+        if (isset($request->end_date)) {
+            $startDate = \Carbon\Carbon::parse($request->start_date);
+            $endDate = \Carbon\Carbon::parse($request->end_date);
+        
+            if ($endDate->isFuture()) {
+                Toastr::error('End date cannot be in the future');
+                return redirect()->route('admin.home');
+            }
+            
+            $todaySales = Sale::where('business_id', $business_id)->where('branch_id', $branch_id)->whereDate('created_at', '>=', $startDate)->whereDate('created_at', '<=', $endDate)->get();
+            $todayReturns = Returns::where('business_id', $business_id)->where('branch_id', $branch_id)->whereNull('channel')->whereDate('created_at', '>=', $startDate)->whereDate('created_at', '<=', $endDate)->get();
+            $todayExpenses = Expense::where('business_id', $business_id)->where('branch_id', $branch_id)->whereDate('created_at', '>=', $startDate)->whereDate('created_at', '<=', $endDate)->get();
+            $creditPayments = Payment::where('business_id', $business_id)->where('branch_id', $branch_id)->whereDate('created_at', '>=', $startDate)->whereDate('created_at', '<=', $endDate)->get();
+            $purchases = Purchase::select('product_id', 'quantity')->where('branch_id', $branch_id)->where('business_id', $business_id)->whereDate('created_at', '>=', $startDate)->whereDate('created_at', '<=', $endDate)->get();
+            $estimates = Estimate::where('branch_id', $branch_id)->where('branch_id', $branch_id)->where('business_id', $business_id)->whereDate('created_at', '>=', $startDate)->whereDate('created_at', '<=', $endDate)->get();
+                
+            $data['start_date'] = $startDate;
+            $data['end_date'] = $endDate;
         }else
         {
             $todaySales = Sale::where('business_id', $business_id)->where('branch_id', $branch_id)->whereNotIn('product_id', [1093, 1012])->whereDate('created_at', today())->get();
             $todayReturns = Returns::where('business_id', $business_id)->where('branch_id', $branch_id)->whereNull('channel')->whereDate('created_at', today())->get();
             $todayExpenses = Expense::where('business_id', $business_id)->where('branch_id', $branch_id)->whereDate('created_at', today())->get();
-            $creditPayments = Payment::where('business_id', $business_id)->where('branch_id', $branch_id)->whereNull('payment_type')->whereDate('created_at', today())->get();
+            $creditPayments = Payment::where('business_id', $business_id)->where('branch_id', $branch_id)->whereDate('created_at', today())->get();
             $estimates = Estimate::where('business_id', $business_id)->where('branch_id', $branch_id)->whereDate('created_at', today())->get();
             $purchases = Purchase::select('product_id', 'quantity')->where('branch_id', $branch_id)->where('business_id', $business_id)->whereDate('created_at', today())->get();
         }
         $data['deposits'] = Payment::select('payment_amount')->where('business_id', $business_id)->where('branch_id', $branch_id)->where('payment_type', 'deposit')->sum('payment_amount');
-
 
         $data['totalDiscounts'] = $todaySales->sum('discount');
         //sales
@@ -275,7 +283,7 @@ class HomeController extends Controller
         $data['transferExpenses'] = $todayExpenses->where('payment_method', 'transfer')->sum('amount');
         //credit Payments
         $data['totalCreditPayments'] = $creditPayments->where('payment_type','credit')->sum('payment_amount');
-        $data['cashCreditPayments'] = $creditPayments->where('payment_method', 'cash')->where('payment_type','credit')->sum('payment_amount');
+        $data['cashCreditPayments'] = $creditPayments->where('payment_method', 'cash')->where('payment_type','credit')->sum('payment_amount'); 
         $data['posCreditPayments'] = $creditPayments->where('payment_method', 'POS')->where('payment_type','credit')->sum('payment_amount');
         $data['transferCreditPayments'] = $creditPayments->where('payment_method', 'transfer')->where('payment_type','credit')->sum('payment_amount');
         //deposits
@@ -292,12 +300,14 @@ class HomeController extends Controller
             return $purchase['product']['buying_price'] * $purchase->quantity;
         });
         $stocks = Product::where('branch_id', $branch_id)
+            ->where('business_id', $business_id)
             ->where('quantity', '<=', 'critical_level')
             ->get();
         $data['lows'] = count($stocks);
-        $data['total_stock'] = Product::select('id')->where('branch_id', $branch_id)->count();
+        $data['total_stock'] = Product::select('id')->where('business_id', $business_id)->where('branch_id', $branch_id)->count();
 
         $data['uncollectedSales'] = Sale::where('branch_id', $branch_id)
+                            ->where('business_id', $business_id)
                             ->where('collected', 0)
                             ->groupBy('receipt_no')
                             ->get();
@@ -306,6 +316,7 @@ class HomeController extends Controller
         $startDate = $endDate->copy()->subDays(6);
 
         $salesData = Sale::where('branch_id', $branch_id)
+            ->where('business_id', $business_id)
             ->whereBetween('created_at', [$startDate, $endDate])
             ->selectRaw('date(created_at) as date, sum(price * quantity - discount) as revenue')
             ->groupBy('date')
@@ -319,7 +330,7 @@ class HomeController extends Controller
         $data['revenues'] = $salesData->pluck('revenue');
 
         $salesData = Sale::where('branch_id', $branch_id)
-            ->whereNotIn('product_id', [1093, 1012])
+            ->where('business_id', $business_id)            
             ->whereBetween('created_at', [$startDate, $endDate])
             ->select('product_id', DB::raw('SUM(quantity) as total_quantity'))
             ->groupBy('product_id')
@@ -334,6 +345,7 @@ class HomeController extends Controller
             ->select(DB::raw('HOUR(created_at) AS hour'), DB::raw('SUM(price*quantity - discount) AS amount'))
             ->whereDate('created_at', Carbon::today())
             ->where('branch_id', $branch_id)
+            ->where('business_id', $business_id)
             ->groupBy(DB::raw('HOUR(created_at)'))
             ->orderBy(DB::raw('HOUR(created_at)'))
             ->get();
@@ -362,6 +374,7 @@ class HomeController extends Controller
             $salesByBranch = DB::table('sales')
                 ->join('branches', 'sales.branch_id', '=', 'branches.id')
                 ->select('branches.name', DB::raw('SUM(price * quantity - discount) AS revenue'))
+                ->where('business_id', $business_id)
                 ->whereDate('sales.created_at', $yesterday)
                 ->groupBy('sales.branch_id')
                 ->get();

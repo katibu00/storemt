@@ -268,6 +268,7 @@ class UsersController extends Controller
             $record->branch_id = auth()->user()->branch_id;
             $record->payment_method = $request->payment_method;
             $record->payment_amount += $total_amount_paid;
+            $record->payment_type = 'credit';
             $record->customer_id = $request->customer_id;
             $record->receipt_nos = implode(',', $receipt_nos);
             $record->staff_id = auth()->user()->id;

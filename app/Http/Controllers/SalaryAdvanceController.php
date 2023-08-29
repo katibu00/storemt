@@ -13,10 +13,14 @@ class SalaryAdvanceController extends Controller
 {
     public function cashierIndex()
     {
-        $data['advances'] = SalaryAdvance::where('cashier_id', auth()->user()->id)
+        $business_id = auth()->user()->business_id;
+        $branch_id = auth()->user()->branch_id;
+        
+        $data['advances'] = SalaryAdvance::where('business_id', $business_id)->where('branch_id', $branch_id)->where('cashier_id', auth()->user()->id)
         ->where('created_at', '>=', Carbon::now()->subDays(40))
         ->get();
         $data['staffs'] = User::whereNotIn('usertype', ['admin', 'customer'])
+                                    ->where('business_id', $business_id)
                                     ->where('branch_id', auth()->user()->branch_id)
                                     ->orderBy('name')
                                     ->get();
@@ -45,6 +49,8 @@ class SalaryAdvanceController extends Controller
     public function adminIndex()
     {
         $data['staffs'] = User::whereNotIn('usertype', ['admin', 'customer'])
+                            ->where('business_id', auth()->user()->business_id)
+                            ->where('branch_id', auth()->user()->branch_id)
                             ->orderBy('name')
                             ->get();
         return view('users.salary_advance.admin_index', $data);

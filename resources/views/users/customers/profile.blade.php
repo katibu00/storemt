@@ -11,7 +11,7 @@
             <div class="row gx-5">
                 <div class="col-md-9">
                     <div class="heading-block border-0 d-flex justify-content-between">
-                        <h3>{{ $user->first_name . '\'s Profile' }}</h3>
+                        <h3>{{ $user->name . '\'s Profile' }}</h3>
                         <a href="{{ route('customers.index') }}" class="btn btn-sm btn-primary"><- customers list</a>
                     </div>
                     <div class="row">
