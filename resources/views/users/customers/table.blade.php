@@ -7,6 +7,7 @@
                 <th scope="col">Phone</th>
                 <th scope="col">Credit Bal.</th>
                 <th scope="col">Deposit Bal.</th>
+                <th scope="col">Previous Bal.</th>
                 <th scope="col">Last Credit Payment</th>
                 <th scope="col">Action</th>
             </tr>
@@ -21,27 +22,28 @@
                     @php
                         $payment = App\Models\Payment::select('created_at', 'payment_amount')
                             ->where('payment_type', 'credit')
+                            ->where('business_id', auth()->user()->id)
                             ->where('customer_id', $user->id)
                             ->latest()
                             ->first();
-                        $deposits = App\Models\Payment::select('payment_amount')
-                            ->where('customer_id', $user->id)
-                            ->where('payment_type', 'deposit')
-                            ->sum('payment_amount');
+                       
                     @endphp
-                    <td>&#8358;{{ number_format($deposits) }}</td>
+                    <td>&#8358;{{ number_format($user->deposit) }}</td>
+                    <td>&#8358;{{ number_format($user->pre_balance) }}</td>
                     <td>{!! @$payment
                         ? '&#8358;' . number_format($payment->payment_amount, 0) . ', ' . $payment->created_at->diffForHumans()
                         : ' - ' !!}</td>
+     
                    <td>
                     <div class="dropdown">
                         <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             Actions
                         </button>
                         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                            <a class="dropdown-item" href="{{ route('customers.profile', $user->id) }}">Go to Profile</a>
+                            <a class="dropdown-item" href="{{ route('customers.profile', $user->id) }}"><i class="fa fa-user"></i> Go to Profile</a>
                             <div class="dropdown-divider"></div>
-                            <button class="dropdown-item deleteItem" data-id="{{ $user->id }}" data-name="{{ $user->name }}">Delete User</button>
+                            <a class="dropdown-item" href="{{ route('customers.edit', $user->id) }}"><i class="fa fa-edit"></i> Edit Customer</a>
+                            <button class="dropdown-item deleteItem" data-id="{{ $user->id }}" data-name="{{ $user->first_name }}"><i class="fa fa-trash"></i> Delete User</button>
                         </div>
                     </div>
                 </td>

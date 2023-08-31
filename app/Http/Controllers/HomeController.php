@@ -221,7 +221,8 @@ class HomeController extends Controller
             $estimates = Estimate::where('business_id', $business_id)->where('branch_id', $branch_id)->whereDate('created_at', today())->get();
             $purchases = Purchase::select('product_id', 'quantity')->where('branch_id', $branch_id)->where('business_id', $business_id)->whereDate('created_at', today())->get();
         }
-        $data['deposits'] = Payment::select('payment_amount')->where('business_id', $business_id)->where('branch_id', $branch_id)->where('payment_type', 'deposit')->sum('payment_amount');
+        $data['deposits'] = User::select('deposit')->where('business_id', $business_id)->where('branch_id', $branch_id)->sum('deposit');
+        $data['pre_balance'] = User::select('pre_balance')->where('business_id', $business_id)->where('branch_id', $branch_id)->sum('pre_balance');
 
         $data['totalDiscounts'] = $todaySales->sum('discount');
         //sales

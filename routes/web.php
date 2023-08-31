@@ -237,6 +237,10 @@ Route::group(['prefix' => 'customers', 'middleware' => ['auth', 'staff']], funct
     Route::post('/load-receipt', [UsersController::class, 'loadReceipt'])->name('load-receipt');
     Route::post('/delete', [UsersController::class, 'deleteCustomer'])->name('customers.delete');
 
+    Route::get('/edit/{id}', [UsersController::class, 'editCustomer'])->name('customers.edit');
+
+    Route::post('/update/{id}', [UsersController::class, 'updateCustomer'])->name('customers.update');
+
     Route::get('/return', [UsersController::class, 'returnIndex'])->name('users.return.index');
     Route::post('/return', [UsersController::class, 'returnStore']);
 

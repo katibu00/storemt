@@ -59,17 +59,13 @@ class SalesController extends Controller
     public function fetchBalance(Request $request)
     {
 
-        $user = User::select('balance')->where('id', $request->customer_id)->first();
-        $deposits = Payment::select('payment_amount')
-            ->where('business_id', auth()->user()->business_id)
-            ->where('customer_id', $request->customer_id)
-            ->where('payment_type', 'deposit')
-            ->sum('payment_amount');
+        $user = User::select('balance','deposit')->where('id', $request->customer_id)->first();
+
         if ($user) {
             return response()->json([
                 'status' => 200,
                 'balance' => $user->balance,
-                'deposits' => $deposits,
+                'deposits' => $user->deposit,
             ]);
         } else {
             return response()->json([

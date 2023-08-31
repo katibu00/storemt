@@ -209,6 +209,12 @@
                                     </li>
                                     <li class="border border-success py-2 px-3 rounded mb-2"
                                         style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span>Total Previous Balance: <span class="fw-bold"
+                                                style="margin-left: 5px;">&#8358;{{ number_format($pre_balance, 0) }}</span></span>
+                                        <span style="margin-left: auto;"></span>
+                                    </li>
+                                    <li class="border border-success py-2 px-3 rounded mb-2"
+                                        style="display: flex; justify-content: space-between; align-items: center;">
                                         <span>Today's Deposit: <span class="fw-bold"
                                                 style="margin-left: 5px;">&#8358;{{ number_format($totalDepositPayments, 0) }}</span></span>
                                         <span style="margin-left: auto;"></span>

@@ -53,6 +53,8 @@ class UsersController extends Controller
         $user->name = $request->name;
         $user->phone = $request->phone;
         $user->balance = 0;
+        $user->pre_balance = $request->pre_balance;
+        $user->deposit = $request->deposit;
         $user->usertype = 'customer';
         $user->password = Hash::make(12345678);
         $user->save();
@@ -104,7 +106,7 @@ class UsersController extends Controller
 
     public function customerProfile($id)
     {
-        $data['user'] = User::select('id', 'name', 'balance')->where('id', $id)->first();
+        $data['user'] = User::select('id', 'name', 'balance','deposit')->where('id', $id)->first();
         $data['dates'] = Sale::select('product_id', 'receipt_no', 'created_at', 'status')
             ->where('business_id', auth()->user()->business_id)
             ->where('payment_method', 'credit')
@@ -130,6 +132,26 @@ class UsersController extends Controller
         return view('users.customers.profile', $data);
     }
 
+    public function editCustomer($id)
+    {
+        $data['user'] = User::find($id);
+        return view('users.customers.edit', $data);
+    }
+
+    public function updateCustomer(Request $request, $id)
+    {
+        $user = User::find($id);
+        $user->first_name = $request->first_name;
+        $user->email = $request->email;
+        $user->phone = $request->phone;
+        $user->pre_balance = $request->pre_balance;
+        $user->deposit_balance = $request->deposit_balance;
+      
+        $user->update();
+        Toastr::success('Customer has been updated sucessfully', 'Done');
+        return redirect()->route('customers.index');
+    }
+
     public function update(Request $request, $id)
     {
         if(auth()->user()->business->has_branches == 1)
@@ -151,12 +173,15 @@ class UsersController extends Controller
         return redirect()->route('users.index');
     }
 
+
     public function savePayment(Request $request)
     {
         $customer = User::find($request->customer_id);
         $receipt_nos = [];
         $total_amount_paid = 0;
         $businessId = auth()->user()->business_id;
+        $branchId = auth()->user()->branch_id;
+        
 
         $rowCount = count($request->receipt_no);
         if ($rowCount != null) {
@@ -167,6 +192,7 @@ class UsersController extends Controller
                     $sales = DB::table('sales')
                         ->where('receipt_no', $receiptNo)
                         ->where('business_id', $businessId)
+                        ->where('branch_id', $branchId)
                         ->get();
                     $total_amount = 0;
                     if ($sales[0]->status) {
@@ -174,21 +200,28 @@ class UsersController extends Controller
                             $total_amount += $sale->price * $sale->quantity - $sale->discount;
                         }
                         DB::table('sales')
-                            ->where('business_id', $businessId)
                             ->where('receipt_no', '=', $request->receipt_no[$i])
+                            ->where('business_id', $businessId)
+                            ->where('branch_id', $branchId)
                             ->update(['status' => 'paid']);
                         // $amount_paid = $total_amount - $sales[0]->payment_amount;
                         // dd($amount_paid);
-                        $customer->balance = $customer->balance - $request->full_payment_payable[$i];
-                        $customer->update();
+                        if ($request->payment_method == 'deposit') {
+                            $customer->deposit -= $request->full_payment_payable[$i];
+                            $customer->balance -= $request->full_payment_payable[$i];
+                            $customer->update();
+                        } else {
+                            $customer->balance = $request->full_payment_payable[$i];
+                        }
 
                         array_push($receipt_nos, $receiptNo);
                         $total_amount_paid += $request->full_payment_payable[$i];
 
                     } else {
                         DB::table('sales')
-                            ->where('business_id', $businessId)
                             ->where('receipt_no', '=', $request->receipt_no[$i])
+                            ->where('business_id', $businessId)
+                            ->where('branch_id', $branchId)
                             ->update(['status' => 'paid']);
                         // dd($request->full_price[$i]);
                         $customer->balance = $customer->balance - $request->full_payment_payable[$i];
@@ -196,6 +229,14 @@ class UsersController extends Controller
 
                         array_push($receipt_nos, $request->receipt_no[$i]);
                         $total_amount_paid += $request->full_payment_payable[$i];
+
+                        if ($request->payment_method == 'deposit') {
+                            $customer->deposit -= $request->full_payment_payable[$i];
+                            $customer->balance -= $request->full_payment_payable[$i];
+                            $customer->update();
+                        } else {
+                            $customer->balance = $request->full_payment_payable[$i];
+                        }
                     }
 
                 }
@@ -208,8 +249,9 @@ class UsersController extends Controller
                         $partialAmount = $request->partial_amount[$i];
 
                         $sales = DB::table('sales')
-                            ->where('business_id', $businessId)
                             ->where('receipt_no', $receiptNo)
+                            ->where('business_id', $businessId)
+                            ->where('branch_id', $branchId)
                             ->get();
 
                         if ($sales->count() < 1) {
@@ -231,6 +273,8 @@ class UsersController extends Controller
 
                         DB::table('sales')
                             ->where('receipt_no', $receiptNo)
+                            ->where('business_id', $businessId)
+                            ->where('branch_id', $branchId)
                             ->update([
                                 'status' => 'partial',
                                 'payment_amount' => $newPaymentAmount,
@@ -239,14 +283,13 @@ class UsersController extends Controller
                         DB::commit();
 
                         // Success message or redirect
-                        if($request->payment_method == 'deposit')
-                        {
+                        if ($request->payment_method == 'deposit') {
+                            $customer->deposit -= $request->partial_amount[$i];
                             $customer->balance = $customer->balance - $request->partial_amount[$i];
-                        }else
-                        {
+                            $customer->update();
+                        } else {
                             $customer->balance = $customer->balance - $request->partial_amount[$i];
                         }
-                       
 
                         array_push($receipt_nos, $request->receipt_no[$i]);
                         $total_amount_paid += $request->partial_amount[$i];
@@ -264,14 +307,15 @@ class UsersController extends Controller
 
         if ($total_amount_paid != 0) {
             $record = new Payment();
+            $record->payment_method = $request->payment_method;
             $record->business_id = auth()->user()->business_id;
             $record->branch_id = auth()->user()->branch_id;
-            $record->payment_method = $request->payment_method;
             $record->payment_amount += $total_amount_paid;
-            $record->payment_type = 'credit';
+            $record->branch_id = auth()->user()->branch_id;
             $record->customer_id = $request->customer_id;
             $record->receipt_nos = implode(',', $receipt_nos);
             $record->staff_id = auth()->user()->id;
+            $record->payment_type = 'credit';
             $record->save();
 
             Toastr::success('Payment has been Recorded sucessfully', 'Done');
@@ -340,9 +384,6 @@ class UsersController extends Controller
             'message' => 'Customer deleted succesfully',
         ]);
     }
-
-   
-
 
     public function returnIndex(Request $request)
     {
@@ -444,7 +485,6 @@ class UsersController extends Controller
         return redirect()->route('customers.profile', $sale->customer_id);
 
     }
-
 
     public function search(Request $request)
     {

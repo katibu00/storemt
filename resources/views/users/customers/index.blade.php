@@ -62,6 +62,20 @@
                                 <p class="text-danger">{{ $message }}</p>
                             @enderror
                         </div>
+                        <div class="form-group">
+                            <label for="pre_balance" class="col-form-label">Previous Credit Balance:</label>
+                            <input type="number" class="form-control" id="pre_balance" name="pre_balance" required>
+                            @error('pre_balance')
+                                <p class="text-danger">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        {{-- <div class="form-group">
+                            <label for="deposit" class="col-form-label">Deposit Balance:</label>
+                            <input type="number" class="form-control" id="deposit" name="deposit" required>
+                            @error('deposit')
+                                <p class="text-danger">{{ $message }}</p>
+                            @enderror
+                        </div> --}}
 
                     </div>
                     <div class="modal-footer">

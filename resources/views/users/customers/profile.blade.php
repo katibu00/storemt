@@ -298,7 +298,7 @@
                                         <div class="clear mt-4"></div>
                                        
                                         @php
-                                        $deposits = App\Models\Payment::where('customer_id',$user->id)->where('payment_type','deposit')->latest()->get();
+                                        $deposits = App\Models\Payment::where('customer_id',$user->id)->where('business_id',auth()->user()->business_id)->where('payment_type','deposit')->latest()->get();
                                         $total_deposit = $deposits->sum('payment_amount');
                                     @endphp
     
@@ -327,7 +327,7 @@
                         </a>
                         <a href="#"
                             class="list-group-item list-group-item-action d-flex justify-content-between">
-                            <div>Deposit Balance</div><span class="badge bg-secondary float-end" style="margin-top: 3px;">&#8358;{{ number_format($total_deposit, 0) }}</span>
+                            <div>Deposit Balance</div><span class="badge bg-secondary float-end" style="margin-top: 3px;">&#8358;{{ number_format($user->deposit, 0) }}</span>
                         </a>
                         <a href="#"
                             class="list-group-item list-group-item-action d-flex justify-content-between">
@@ -398,10 +398,13 @@
                                         $sales = App\Models\Sale::select('product_id', 'price', 'quantity', 'discount', 'status', 'payment_amount')
                                             ->where('receipt_no', $date->receipt_no)
                                             ->where('customer_id', $user->id)
+                                            ->where('business_id', auth()->user()->business_id)
                                             ->get();
 
                                         $returns = App\Models\Returns::select('product_id', 'price', 'quantity', 'discount', 'payment_method')
                                                 ->where('return_no', 'R'.$date->receipt_no)
+                                                ->where('business_id', auth()->user()->business_id)
+                                                ->where('branch_id', auth()->user()->branch_id)
                                                 ->get();
                                             
                                         foreach ($sales as $sale) {
