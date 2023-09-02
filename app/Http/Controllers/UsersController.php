@@ -141,8 +141,7 @@ class UsersController extends Controller
     public function updateCustomer(Request $request, $id)
     {
         $user = User::find($id);
-        $user->first_name = $request->first_name;
-        $user->email = $request->email;
+        $user->name = $request->name;
         $user->phone = $request->phone;
         $user->pre_balance = $request->pre_balance;
         $user->deposit_balance = $request->deposit_balance;

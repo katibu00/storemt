@@ -15,17 +15,14 @@
                         <form action="{{route('customers.update',$user->id)}}" method="post">
                             @csrf
                             <div class="form-group">
-                                <label for="first_name" class="col-form-label">Name:</label>
-                                <input type="text" class="form-control" id="first_name" name="first_name" value="{{$user->first_name}}" required>
+                                <label for="name" class="col-form-label">Name:</label>
+                                <input type="text" class="form-control" id="name" name="name" value="{{ $user->name }}" required>
                             </div>
                             <div class="form-group">
                                 <label for="phone" class="col-form-label">Phone Number:</label>
                                 <input type="text" class="form-control" id="phone" name="phone" value="{{$user->phone}}" required>
                             </div>
-                            <div class="form-group">
-                                <label for="email" class="col-form-label">Email:</label>
-                                <input type="email" class="form-control" id="email" name="email" value="{{$user->email}}">
-                            </div>
+                
                             <div class="form-group">
                                 <label for="deposit" class="col-form-label">Deposit Balance:</label>
                                 <input type="number" class="form-control" id="deposit" name="deposit" value="{{$user->deposit}}">
@@ -35,8 +32,6 @@
                                 <input type="number" class="form-control" id="pre_balance" name="pre_balance" value="{{$user->pre_balance}}">
                             </div>
                            
-                           
-                            
                             <div class="form-group row">
                                 <div class="col-sm-10">
                                     <button type="submit" class="btn btn-primary d-block">Update</button>

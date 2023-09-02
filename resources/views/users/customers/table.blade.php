@@ -43,7 +43,7 @@
                             <a class="dropdown-item" href="{{ route('customers.profile', $user->id) }}"><i class="fa fa-user"></i> Go to Profile</a>
                             <div class="dropdown-divider"></div>
                             <a class="dropdown-item" href="{{ route('customers.edit', $user->id) }}"><i class="fa fa-edit"></i> Edit Customer</a>
-                            <button class="dropdown-item deleteItem" data-id="{{ $user->id }}" data-name="{{ $user->first_name }}"><i class="fa fa-trash"></i> Delete User</button>
+                            <button class="dropdown-item deleteItem" data-id="{{ $user->id }}" data-name="{{ $user->name }}"><i class="fa fa-trash"></i> Delete User</button>
                         </div>
                     </div>
                 </td>
