@@ -144,7 +144,7 @@ class UsersController extends Controller
         $user->name = $request->name;
         $user->phone = $request->phone;
         $user->pre_balance = $request->pre_balance;
-        $user->deposit = $request->deposit_balance;
+        $user->deposit = $request->deposit;
       
         $user->update();
         Toastr::success('Customer has been updated sucessfully', 'Done');
