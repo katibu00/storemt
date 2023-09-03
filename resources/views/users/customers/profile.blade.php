@@ -47,7 +47,14 @@
                                             data-bs-toggle="pill" data-bs-target="#deposit-alt"
                                             type="button" role="tab" aria-controls="deposit-alt"
                                             aria-selected="false"><i class="fas fa-money-bill"></i>
-                                            Active Deposits</a></button>
+                                            Deposits History</a></button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="active_prebal"
+                                            data-bs-toggle="pill" data-bs-target="#prebal-alt"
+                                            type="button" role="tab" aria-controls="prebal-alt"
+                                            aria-selected="false"><i class="fas fa-money-bill"></i>
+                                            Previous Balance</a></button>
                                     </li>
                                 </ul>
                                 <div id="canvas-TabContent2" class="tab-content">
@@ -77,9 +84,11 @@
                                                             $sales = App\Models\Sale::select('product_id', 'price', 'quantity', 'discount', 'status', 'payment_amount')
                                                                 ->where('receipt_no', $date->receipt_no)
                                                                 ->where('customer_id', $user->id)
+                                                                ->where('business_id', auth()->user()->business_id)
                                                                 ->get(); 
                                                             $returns = App\Models\Returns::select('product_id', 'price', 'quantity', 'discount', 'payment_method')
                                                                 ->where('return_no', 'R'.$date->receipt_no)
+                                                                ->where('business_id', auth()->user()->business_id)
                                                                 ->get();
                                                         @endphp
                                                         <tr>
@@ -296,17 +305,16 @@
 
                                     <div class="tab-pane fade" id="deposit-alt" role="tabpanel" aria-labelledby="active_deposit" tabindex="0">
                                         <div class="clear mt-4"></div>
-                                       
-                                        @php
-                                        $deposits = App\Models\Payment::where('customer_id',$user->id)->where('business_id',auth()->user()->business_id)->where('payment_type','deposit')->latest()->get();
-                                        $total_deposit = $deposits->sum('payment_amount');
-                                    @endphp
-    
-                                    @if($total_deposit > 1)
+                                                                              @php
+                                            $deposits = App\Models\Payment::where('customer_id',$user->id)->where('business_id',auth()->user()->business_id)->where('payment_type','deposit')->latest()->get();
+                                        @endphp
     
                                    @include('users.customers.deposit_table')
-                                    @endif
-
+                                    </div>
+                                    <div class="tab-pane fade" id="prebal-alt" role="tabpanel" aria-labelledby="active_prebal" tabindex="0">
+                                        <div class="clear mt-4"></div>
+                                      @include('users.customers.pre_balance_table')
+                                  
                                     </div>
 
                              
@@ -556,6 +564,48 @@
         </div>
     </div>
 </div>
+
+
+<div class="modal fade" id="addPaymentModal" tabindex="-1" role="dialog" aria-labelledby="addPaymentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="addPaymentModalLabel">Add New Payment</h4>
+                <button type="button" class="btn-close btn-sm" data-bs-dismiss="modal" aria-hidden="true"></button>
+            </div>
+            <form id="addPaymentForm" action="{{ route('customers.save.pre_balance') }}" method="POST">
+                @csrf
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="form-group col-md-6">
+                            <label for="paymentAmount" class="col-form-label">Payment Amount:</label>
+                            <input type="number" step="any" class="form-control" placeholder="Amount" name="paymentAmount" required>
+                        </div>
+                        <input type="hidden" value="{{ $user->id }}" name="customer_id">
+                        <div class="form-group col-md-6">
+                            <label for="paymentMethod" class="col-form-label">Payment Method:</label>
+                            <select class="form-select" id="paymentMethod" name="paymentMethod" required>
+                                <option value=""></option>
+                                <option value="cash">Cash</option>
+                                <option value="transfer">Transfer</option>
+                                <option value="pos">POS</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="paymentDescription" class="col-form-label">Description:</label>
+                        <textarea class="form-control" id="paymentDescription" name="paymentDescription" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary ml-2">Add Payment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 
 @endsection
 

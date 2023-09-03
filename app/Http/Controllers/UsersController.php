@@ -54,7 +54,6 @@ class UsersController extends Controller
         $user->phone = $request->phone;
         $user->balance = 0;
         $user->pre_balance = $request->pre_balance;
-        $user->deposit = $request->deposit;
         $user->usertype = 'customer';
         $user->password = Hash::make(12345678);
         $user->save();
@@ -106,7 +105,7 @@ class UsersController extends Controller
 
     public function customerProfile($id)
     {
-        $data['user'] = User::select('id', 'name', 'balance','deposit')->where('id', $id)->first();
+        $data['user'] = User::select('id', 'name', 'balance','deposit','pre_balance')->where('id', $id)->first();
         $data['dates'] = Sale::select('product_id', 'receipt_no', 'created_at', 'status')
             ->where('business_id', auth()->user()->business_id)
             ->where('payment_method', 'credit')
@@ -173,6 +172,161 @@ class UsersController extends Controller
     }
 
 
+    // public function savePayment(Request $request)
+    // {
+    //     $customer = User::find($request->customer_id);
+    //     $receipt_nos = [];
+    //     $total_amount_paid = 0;
+    //     $businessId = auth()->user()->business_id;
+    //     $branchId = auth()->user()->branch_id;
+        
+
+    //     $rowCount = count($request->receipt_no);
+    //     if ($rowCount != null) {
+    //         for ($i = 0; $i < $rowCount; $i++) {
+
+    //             if ($request->payment_option[$i] == "Full Payment") {
+    //                 $receiptNo = $request->receipt_no[$i];
+    //                 $sales = DB::table('sales')
+    //                     ->where('receipt_no', $receiptNo)
+    //                     ->where('business_id', $businessId)
+    //                     ->where('branch_id', $branchId)
+    //                     ->get();
+    //                 $total_amount = 0;
+    //                 if ($sales[0]->status) {
+    //                     foreach ($sales as $sale) {
+    //                         $total_amount += $sale->price * $sale->quantity - $sale->discount;
+    //                     }
+    //                     DB::table('sales')
+    //                         ->where('receipt_no', '=', $request->receipt_no[$i])
+    //                         ->where('business_id', $businessId)
+    //                         ->where('branch_id', $branchId)
+    //                         ->update(['status' => 'paid']);
+    //                     // $amount_paid = $total_amount - $sales[0]->payment_amount;
+    //                     // dd($amount_paid);
+    //                     if ($request->payment_method == 'deposit') {
+    //                         $customer->deposit -= $request->full_payment_payable[$i];
+    //                         $customer->balance -= $request->full_payment_payable[$i];
+    //                         $customer->update();
+    //                     } else {
+    //                         $customer->balance = $request->full_payment_payable[$i];
+    //                     }
+
+    //                     array_push($receipt_nos, $receiptNo);
+    //                     $total_amount_paid += $request->full_payment_payable[$i];
+
+    //                 } else {
+    //                     DB::table('sales')
+    //                         ->where('receipt_no', '=', $request->receipt_no[$i])
+    //                         ->where('business_id', $businessId)
+    //                         ->where('branch_id', $branchId)
+    //                         ->update(['status' => 'paid']);
+    //                     // dd($request->full_price[$i]);
+    //                     $customer->balance = $customer->balance - $request->full_payment_payable[$i];
+    //                     $customer->update();
+
+    //                     array_push($receipt_nos, $request->receipt_no[$i]);
+    //                     $total_amount_paid += $request->full_payment_payable[$i];
+
+    //                     if ($request->payment_method == 'deposit') {
+    //                         $customer->deposit -= $request->full_payment_payable[$i];
+    //                         $customer->balance -= $request->full_payment_payable[$i];
+    //                         $customer->update();
+    //                     } else {
+    //                         $customer->balance = $request->full_payment_payable[$i];
+    //                     }
+    //                 }
+
+    //             }
+    //             if ($request->payment_option[$i] == "Partial Payment") {
+
+    //                 try {
+    //                     DB::beginTransaction();
+
+    //                     $receiptNo = $request->receipt_no[$i];
+    //                     $partialAmount = $request->partial_amount[$i];
+
+    //                     $sales = DB::table('sales')
+    //                         ->where('receipt_no', $receiptNo)
+    //                         ->where('business_id', $businessId)
+    //                         ->where('branch_id', $branchId)
+    //                         ->get();
+
+    //                     if ($sales->count() < 1) {
+    //                         Toastr::error("Sale not found for receipt no: $receiptNo");
+    //                         return redirect()->back();
+    //                     }
+
+    //                     $total_amount = 0;
+    //                     foreach ($sales as $sale) {
+    //                         $total_amount += $sale->quantity * $sale->price - $sale->discount;
+    //                     }
+
+    //                     $newPaymentAmount = $sales[0]->payment_amount + $partialAmount;
+
+    //                     if ($newPaymentAmount > $total_amount) {
+    //                         Toastr::error('Amount is greater than the total for the Receipt No: ' . $receiptNo, 'Amount Exceeded');
+    //                         return redirect()->back();
+    //                     }
+
+    //                     DB::table('sales')
+    //                         ->where('receipt_no', $receiptNo)
+    //                         ->where('business_id', $businessId)
+    //                         ->where('branch_id', $branchId)
+    //                         ->update([
+    //                             'status' => 'partial',
+    //                             'payment_amount' => $newPaymentAmount,
+    //                         ]);
+
+    //                     DB::commit();
+
+    //                     // Success message or redirect
+    //                     if ($request->payment_method == 'deposit') {
+    //                         $customer->deposit -= $request->partial_amount[$i];
+    //                         $customer->balance = $customer->balance - $request->partial_amount[$i];
+    //                         $customer->update();
+    //                     } else {
+    //                         $customer->balance = $customer->balance - $request->partial_amount[$i];
+    //                     }
+
+    //                     array_push($receipt_nos, $request->receipt_no[$i]);
+    //                     $total_amount_paid += $request->partial_amount[$i];
+
+    //                 } catch (Exception $e) {
+    //                     DB::rollback();
+
+    //                 }
+
+    //             }
+
+    //         }
+    //     }
+    //     $customer->update();
+
+    //     if ($total_amount_paid != 0) {
+    //         $record = new Payment();
+    //         $record->payment_method = $request->payment_method;
+    //         $record->business_id = auth()->user()->business_id;
+    //         $record->branch_id = auth()->user()->branch_id;
+    //         $record->payment_amount += $total_amount_paid;
+    //         $record->branch_id = auth()->user()->branch_id;
+    //         $record->customer_id = $request->customer_id;
+    //         $record->receipt_nos = implode(',', $receipt_nos);
+    //         $record->staff_id = auth()->user()->id;
+    //         $record->payment_type = 'credit';
+    //         $record->save();
+
+    //         Toastr::success('Payment has been Recorded sucessfully', 'Done');
+    //         return redirect()->back();
+
+    //     }
+
+    //     Toastr::warning('Sales amount is zero. Nothing Recorded', 'Not Recorded');
+    //     return redirect()->back();
+
+    // }
+
+
     public function savePayment(Request $request)
     {
         $customer = User::find($request->customer_id);
@@ -182,16 +336,31 @@ class UsersController extends Controller
         $branchId = auth()->user()->branch_id;
         
 
+        if($request->receipt_no == null)
+        {
+            Toastr::error("No Transaction selected");
+            return redirect()->back();
+        }
+
         $rowCount = count($request->receipt_no);
         if ($rowCount != null) {
             for ($i = 0; $i < $rowCount; $i++) {
 
                 if ($request->payment_option[$i] == "Full Payment") {
+                  
+                    if ($request->payment_method == 'deposit') 
+                    {
+                        if($customer->deposit < $request->full_payment_payable[$i]) 
+                        {
+                            Toastr::error("Customer has no enough deposit balance");
+                            return redirect()->back();
+                        }
+                    }
+                  
+
                     $receiptNo = $request->receipt_no[$i];
                     $sales = DB::table('sales')
                         ->where('receipt_no', $receiptNo)
-                        ->where('business_id', $businessId)
-                        ->where('branch_id', $branchId)
                         ->get();
                     $total_amount = 0;
                     if ($sales[0]->status) {
@@ -203,16 +372,16 @@ class UsersController extends Controller
                             ->where('business_id', $businessId)
                             ->where('branch_id', $branchId)
                             ->update(['status' => 'paid']);
-                        // $amount_paid = $total_amount - $sales[0]->payment_amount;
-                        // dd($amount_paid);
+                         
+                   
                         if ($request->payment_method == 'deposit') {
                             $customer->deposit -= $request->full_payment_payable[$i];
                             $customer->balance -= $request->full_payment_payable[$i];
                             $customer->update();
                         } else {
-                            $customer->balance = $request->full_payment_payable[$i];
+                            $customer->balance -= $request->full_payment_payable[$i];
+                            $customer->update();
                         }
-
                         array_push($receipt_nos, $receiptNo);
                         $total_amount_paid += $request->full_payment_payable[$i];
 
@@ -222,10 +391,7 @@ class UsersController extends Controller
                             ->where('business_id', $businessId)
                             ->where('branch_id', $branchId)
                             ->update(['status' => 'paid']);
-                        // dd($request->full_price[$i]);
-                        $customer->balance = $customer->balance - $request->full_payment_payable[$i];
-                        $customer->update();
-
+                       
                         array_push($receipt_nos, $request->receipt_no[$i]);
                         $total_amount_paid += $request->full_payment_payable[$i];
 
@@ -234,12 +400,22 @@ class UsersController extends Controller
                             $customer->balance -= $request->full_payment_payable[$i];
                             $customer->update();
                         } else {
-                            $customer->balance = $request->full_payment_payable[$i];
+                            $customer->balance -= $request->full_payment_payable[$i];
+                            $customer->update();
                         }
                     }
 
                 }
                 if ($request->payment_option[$i] == "Partial Payment") {
+
+                    if ($request->payment_method == 'deposit') 
+                    {
+                        if($customer->deposit < $request->partial_amount[$i]) 
+                        {
+                            Toastr::error("Customer has no enough deposit balance");
+                            return redirect()->back();
+                        }
+                    }
 
                     try {
                         DB::beginTransaction();
@@ -284,10 +460,11 @@ class UsersController extends Controller
                         // Success message or redirect
                         if ($request->payment_method == 'deposit') {
                             $customer->deposit -= $request->partial_amount[$i];
-                            $customer->balance = $customer->balance - $request->partial_amount[$i];
+                            $customer->balance -= $request->partial_amount[$i];
                             $customer->update();
                         } else {
-                            $customer->balance = $customer->balance - $request->partial_amount[$i];
+                            $customer->balance -=  $request->partial_amount[$i];
+                            $customer->update();
                         }
 
                         array_push($receipt_nos, $request->receipt_no[$i]);
@@ -307,14 +484,12 @@ class UsersController extends Controller
         if ($total_amount_paid != 0) {
             $record = new Payment();
             $record->payment_method = $request->payment_method;
-            $record->business_id = auth()->user()->business_id;
-            $record->branch_id = auth()->user()->branch_id;
             $record->payment_amount += $total_amount_paid;
+            $record->business_id = auth()->user()->business_id;
             $record->branch_id = auth()->user()->branch_id;
             $record->customer_id = $request->customer_id;
             $record->receipt_nos = implode(',', $receipt_nos);
-            $record->staff_id = auth()->user()->id;
-            $record->payment_type = 'credit';
+            $record->user_id = auth()->user()->id;
             $record->save();
 
             Toastr::success('Payment has been Recorded sucessfully', 'Done');
@@ -340,6 +515,40 @@ class UsersController extends Controller
         $record->save();
 
         Toastr::success('Deposit has been Recorded sucessfully', 'Done');
+        return redirect()->back();
+
+    }
+
+    public function savePreBalance(Request $request)
+    {
+        $user = User::find($request->customer_id);
+
+        if($user->pre_balance < 1 )
+        {
+            Toastr::error('User Previous Balance Record is less than 1', 'Warning');
+            return redirect()->back(); 
+        }
+        if( $request->paymentAmount > $user->pre_balance)
+        {
+            Toastr::error('Previous Balance Payment cannot exceed the user balance', 'Warning');
+            return redirect()->back(); 
+        }
+        $record = new Payment();
+        $record->business_id = auth()->user()->business_id;
+        $record->branch_id = auth()->user()->branch_id;
+        $record->payment_method = $request->paymentMethod;
+        $record->payment_amount += $request->paymentAmount;
+        $record->note = $request->paymentDescription;
+        $record->customer_id = $request->customer_id;
+        $record->staff_id = auth()->user()->id;
+        $record->payment_type = 'pre_bal';
+        $record->save();
+
+        
+        $user->pre_balance -= $request->paymentAmount;
+        $user->save();
+
+        Toastr::success('Previous Balance Payment has been Recorded sucessfully', 'Done');
         return redirect()->back();
 
     }
