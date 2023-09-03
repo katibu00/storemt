@@ -484,12 +484,14 @@ class UsersController extends Controller
         if ($total_amount_paid != 0) {
             $record = new Payment();
             $record->payment_method = $request->payment_method;
-            $record->payment_amount += $total_amount_paid;
             $record->business_id = auth()->user()->business_id;
+            $record->branch_id = auth()->user()->branch_id;
+            $record->payment_amount += $total_amount_paid;
             $record->branch_id = auth()->user()->branch_id;
             $record->customer_id = $request->customer_id;
             $record->receipt_nos = implode(',', $receipt_nos);
-            $record->user_id = auth()->user()->id;
+            $record->staff_id = auth()->user()->id;
+            $record->payment_type = 'credit';
             $record->save();
 
             Toastr::success('Payment has been Recorded sucessfully', 'Done');
