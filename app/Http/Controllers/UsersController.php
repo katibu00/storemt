@@ -474,9 +474,7 @@ class UsersController extends Controller
                         DB::rollback();
 
                     }
-
                 }
-
             }
         }
         $customer->update();

@@ -81,7 +81,7 @@ class SalesController extends Controller
         $year = date('Y');
         $month = Carbon::now()->format('m');
         $day = Carbon::now()->format('d');
-        $last = Sale::where('business_id', $user->business_id)->whereDate('created_at', '=', date('Y-m-d'))->latest()->first();
+        $last = Sale::where('business_id', $user->business_id)->where('branch_id', $user->branch_id)->whereDate('created_at', '=', date('Y-m-d'))->latest()->first();
         if ($last == null) {
             $last_record = '1/0';
         } else {
@@ -110,7 +110,13 @@ class SalesController extends Controller
                 }
                 $data->payment_method = $request->payment_method;
                 $data->staff_id = auth()->user()->id;
-                $data->customer_id = $request->customer_name;
+               
+                if (is_numeric($request->customer_name)) {
+                    $data->customer_id = $request->customer_name;
+                } else {
+                    $data->customer_name = $request->customer_name;
+                }
+                
                 $data->note = $request->note;
 
                 $data->save();
@@ -280,9 +286,11 @@ class SalesController extends Controller
     public function loadReceipt(Request $request)
     {
         $items = Sale::with('product')->where('business_id', auth()->user()->business_id)->where('branch_id', auth()->user()->branch_id)->where('receipt_no', $request->receipt_no)->get();
+        $staff = User::select('name')->where('id',$items[0]->staff_id)->first();
         return response()->json([
             'status' => 200,
             'items' => $items,
+            'staff' => $staff->name,
         ]);
     }
 
