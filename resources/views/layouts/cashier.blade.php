@@ -29,11 +29,11 @@
             href="{{ route('returns') }}">
             <div>Returns</div>
         </a></li>
-
+        @if(auth()->user()->business->manage_customers == true)
         <li class="menu-item"><a
             class="menu-link" href="{{ route('customers.index') }}">
             <div>Customers</div>
-        </a></li>
+        </a></li>@endif
     </ul>
 </li>
 @else
@@ -114,10 +114,11 @@
         <div>Customers</div>
     </a>
     <ul class="sub-menu-container">
+        @if(auth()->user()->business->manage_customers == true)
         <li class="menu-item {{ $route == 'customers.index' ? 'current' : '' }} {{ $route == 'customers.profile' ? 'current' : '' }}"><a
             class="menu-link" href="{{ route('customers.index') }}">
             <div>Customers</div>
-        </a></li>
+        </a></li>@endif
         <li
             class="menu-item {{ $route == 'cashier.salary_advance.index' ? 'current' : '' }}">
             <a class="menu-link" href="{{ route('cashier.salary_advance.index') }}">

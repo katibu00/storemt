@@ -389,6 +389,7 @@
                 success: function(res) {
                     var html = '';
                     var total = 0;
+                    var discount = 0;
 
     
 
@@ -403,9 +404,8 @@
                             .toLocaleString() + '</td>' +
                             '</tr>';
                         total += item.quantity * item.price;
+                        discount += item.discount;
                     });
-
-                    var discount = res.items[0].discount;
 
                     var totalCal = total;
 

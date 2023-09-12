@@ -33,6 +33,15 @@ class UsersController extends Controller
         $branchId = auth()->user()->branch_id;
         $businessId = auth()->user()->business_id;
 
+        if(auth()->user()->usertype == 'cashier')
+        {
+            if(auth()->user()->business->manage_customers == false)
+            {
+                Toastr::error('You do not have persmission', 'Denied');
+                return redirect()->route('cashier.home');
+            }
+        }
+
         $data['customers'] = User::where('usertype', 'customer')
                             ->where('branch_id', $branchId)
                             ->where('business_id', $businessId)

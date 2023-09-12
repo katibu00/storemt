@@ -103,7 +103,18 @@
                                 </div>
                             </div>
 
-                            <!-- Add more sections or fields as needed -->
+                            <div class="form-group row">
+                                <label class="col-sm-2 col-form-label">Manage Customers:</label>
+                                <div class="col-sm-10">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="manage_customers" name="manage_customers" value="1" {{ $business->manage_customers ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="manage_customers">
+                                            Allow cashier to manage customers
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
 
                             <div class="form-group row">
                                 <div class="col-sm-2"></div>

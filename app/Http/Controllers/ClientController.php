@@ -34,6 +34,7 @@ class ClientController extends Controller
         $business->name = $request->input('business_name');
         $business->username = $request->input('business_username');
         $business->has_branches = $request->has('has_multiple_branches') ? 1 : 0;
+        $business->manage_customers = $request->has('manage_customers') ? 1 : 0;
     
         // Upload and save the logo
         if ($request->hasFile('logo')) {
