@@ -72,8 +72,8 @@ $user = auth()->user();
             Email: {{  $user->branch->email }}<br>
             Website: {{  $user->business->website }}
         </div>
-        <div style="font-size: 12px; margin-top: 10px;">Ref ID: <span class="tran_id">></span></div> <!-- Added Transaction ID -->
-    </div>
+        <div style="font-size: 12px; margin-top: 10px;">Ref ID: <span class="tran_id"></span></div>
+        <div style="font-size: 13px; margin-top: 5px;margin-bottom: 10px;">Cashier: <span id="cashier_name"></span></div> 
 
     <table>
         <thead>
@@ -87,14 +87,12 @@ $user = auth()->user();
         <tbody id="receipt_body">
         </tbody>
         <tfoot>
-            {{-- <tr>
-                <td colspan="3" style="text-align: right;">Subtotal:</td>
-                <td></td>
+
+            <tr id="salesdiscounttr" style="display:none;">
+                <td colspan="3" style="text-align: right;">Discount:</td>
+                <td id="salesdiscount"></td>
             </tr>
-            <tr>
-                <td colspan="3" style="text-align: right;">Tax (%):</td>
-                <td>0.00</td>
-            </tr> --}}
+            
             <tr>
                 <td colspan="3" style="text-align: right;">Total:</td>
                 <td id="total"></td>

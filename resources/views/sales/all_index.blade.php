@@ -90,11 +90,14 @@
                 success: function(res) {
                     var html = '';
                     var total = 0;
+                    var discount = 0;
+
+    
 
                     $.each(res.items, function(key, item) {
                         html +=
                             '<tr style="text-align: center">' +
-                            '<td style="text-align: left"><span style="font-size: 12px;">' + item
+                            '<td style="text-align: left"><span style="font-size: 12px;" >' + item
                             .product.name + '</span></td>' +
                             '<td style="font-size: 12px;">' + item.quantity + '</td>' +
                             '<td style="font-size: 12px;">' + item.price.toLocaleString() + '</td>' +
@@ -102,62 +105,36 @@
                             .toLocaleString() + '</td>' +
                             '</tr>';
                         total += item.quantity * item.price;
+                        discount += item.discount;
                     });
 
-                    if (res.items[0].labor_cost !== null) {
-                        var laborCost = parseInt(res.items[0]
-                        .labor_cost); // Convert labor cost from string to integer
-
-                        html +=
-                            '<tr style="text-align: center">' +
-                            '<td></td>' +
-                            '<td colspan="2"><b>Sub-total</b></td>' +
-                            '<td><b>&#8358;' + total.toLocaleString() + '</b></td>' +
-                            '</tr>';
-
-                        html +=
-                            '<tr style="text-align: center">' +
-                            '<td></td>' +
-                            '<td colspan="2"><b>Labor Cost</b></td>' +
-                            '<td><b>&#8358;' + laborCost.toLocaleString() + '</b></td>' +
-                            '</tr>';
-
-                        total += laborCost; // Add labor cost to the total
-
-                        html +=
-                            '<tr style="text-align: center">' +
-                            '<td></td>' +
-                            '<td colspan="2"><b>Total</b></td>' +
-                            '<td><b>&#8358;' + total.toLocaleString() + '</b></td>' +
-                            '</tr>';
-
-                        html +=
-                            '<tr style="text-align: center">' +
-                            '<td colspan="4"><i>Labor cost is separate, not related to the above company.</i></td>' +
-                            '</tr>';
-                    } else {
-                        html +=
-                            '<tr style="text-align: center">' +
-                            '<td></td>' +
-                            '<td colspan="2"><b>Total Amount</b></td>' +
-                            '<td><b>&#8358;' + total.toLocaleString() + '</b></td>' +
-                            '</tr>';
-                    }
+                    var totalCal = total;
 
                     $('#receipt_body').html(html);
                     $('.tran_id').html('S' + res.items[0].receipt_no);
+                    $('#cashier_name').html(res.staff);
+
+                    if (discount > 0) {
+                        $('#salesdiscount').html('₦' + discount.toLocaleString());
+                        $("#salesdiscounttr").show();
+                        totalCal = total - discount;
+                    }else{
+                        $("#salesdiscounttr").hide();
+                    }
+                    $('#total').html('₦' + totalCal.toLocaleString());
 
                     var data = document.getElementById('print').innerHTML;
 
-                    var myReceipt = window.open("", "myWin", "left=150, top=130,width=300, height=400");
+                    myReceipt = window.open("", "myWin", "left=150, top=130,width=300, height=400");
 
                     myReceipt.screenX = 0;
                     myReceipt.screenY = 0;
                     myReceipt.document.write(data);
-                    myReceipt.document.title = "Print Estimate Certificate";
+                    myReceipt.document.title = "Print Receipt";
                     myReceipt.focus();
                     myReceipt.print();
                 },
+
 
                 error: function(xhr, ajaxOptions, thrownError) {
                     if (xhr.status === 419) {
