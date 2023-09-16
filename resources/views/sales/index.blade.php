@@ -143,26 +143,19 @@
                                             <thead>
                                                 <tr>
                                                     <th style="width: 2%"></th>
-                                                    <th> </th>
+                                                   
                                                     <th style="width: 30%">Product</th>
                                                     <th>Qty</th>
                                                     <th>Price</th>
                                                     <th>Discount</th>
                                                     <th>Amount</th>
-
+                                                    <th> </th>
                                                 </tr>
                                             </thead>
                                             <tbody class="addMoreRow">
                                                 <tr>
                                                     <td>1</td>
-                                                    <td class="button-group">
-                                                        <a href="#"
-                                                            class="btn mx-1 btn-danger btn-sm remove_row rounded-circle"><i
-                                                                class="fa fa-times-circle"></i></a>
-                                                        <a href="#"
-                                                            class="btn btn-success btn-sm add_row rounded-circle"><i
-                                                                class="fa fa-plus-circle"></i></a>
-                                                    </td>
+                                                   
                                                     <td>
 
                                                         <select class="form-select product_id" id="product_id"
@@ -195,7 +188,14 @@
                                                             id="total_amount"
                                                             class="form-control disabled-input total_amount">
                                                     </td>
-
+                                                    <td class="button-group">
+                                                        <a href="#"
+                                                            class="btn mx-1 btn-danger btn-sm remove_row rounded-circle"><i
+                                                                class="fa fa-times-circle"></i></a>
+                                                        <a href="#"
+                                                            class="btn btn-success btn-sm add_row rounded-circle"><i
+                                                                class="fa fa-plus-circle"></i></a>
+                                                    </td>
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -295,13 +295,13 @@
             var product = $('.product_id').html();
             var numberofrow = ($('.addMoreRow tr').length - 0) + 1;
             var tr = '<tr><td class="no">' + numberofrow + '</td>' +
-                '<td class="button-group"><a class="btn btn-danger btn-sm mx-1 remove_row rounded-circle"><i class="fa fa-times-circle"></i></a> <a href="#" class="btn btn-success btn-sm add_row rounded-circle"><i class="fa fa-plus-circle"></i></a></td>' +
                 '<td><select class="form-select product_id" name="product_id[]" required>' + product +
                 '</select><input type="hidden" class="product_qty" value=""></td>' +
                 '<td><input type="number" name="quantity[]" placeholder="Qty" step="any" class="form-control quantity" required></td>' +
                 '<td><input type="number" readonly name="price[]" class="form-control disabled-input price"></td>' +
                 '<td><input type="number" name="discount[]" placeholder="Dicount" class="form-control discount"></td>' +
-                '<td><input type="number" readonly name="total_amount[]" class="form-control disabled-input total_amount"></td></tr>';
+                '<td><input type="number" readonly name="total_amount[]" class="form-control disabled-input total_amount"></td>'+
+                '<td class="button-group"><a class="btn btn-danger btn-sm mx-1 remove_row rounded-circle"><i class="fa fa-times-circle"></i></a> <a href="#" class="btn btn-success btn-sm add_row rounded-circle"><i class="fa fa-plus-circle"></i></a></td></tr>';
             $('.addMoreRow').append(tr);
             $('.product_id').select2();
         });
