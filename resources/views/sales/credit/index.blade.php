@@ -453,7 +453,7 @@
                     $.each(res.items, function(key, item) {
                         html +=
                             '<tr style="text-align: center">' +
-                            '<td style="text-align: left"><span style="font-size: 12px;" >' + item
+                            '<td style="text-align: left"><span style="font-size: 12px;">' + item
                             .product.name + '</span></td>' +
                             '<td style="font-size: 12px;">' + item.quantity + '</td>' +
                             '<td style="font-size: 12px;">' + item.price.toLocaleString() + '</td>' +
@@ -461,7 +461,9 @@
                             .toLocaleString() + '</td>' +
                             '</tr>';
                         total += item.quantity * item.price;
-                        discount += item.discount;
+
+                        // Parse the discount as an integer and add it to the discount variable
+                        discount += parseInt(item.discount);
                     });
 
                     var totalCal = total;
@@ -490,6 +492,7 @@
                     myReceipt.focus();
                     myReceipt.print();
                 },
+
                 error: function(xhr, ajaxOptions, thrownError) {
                     if (xhr.status === 419) {
                         Command: toastr["error"](
