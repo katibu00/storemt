@@ -401,4 +401,9 @@ class HomeController extends Controller
 
     }
 
+    public function super()
+    {
+        return view('home.super');
+    }
+
 }

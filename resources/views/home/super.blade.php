@@ -12,7 +12,7 @@
                         <div class="card mb-3">
                             <div class="card-body">
                                 <h5 class="card-title">Registered Businesses</h5>
-                                <p class="card-text">{{ $registeredBusinesses }}</p>
+                                {{-- <p class="card-text">{{ $registeredBusinesses }}</p> --}}
                             </div>
                         </div>
                     </div>
@@ -20,7 +20,7 @@
                         <div class="card mb-3">
                             <div class="card-body">
                                 <h5 class="card-title">Registered Users</h5>
-                                <p class="card-text">{{ $registeredUsers }}</p>
+                                {{-- <p class="card-text">{{ $registeredUsers }}</p> --}}
                             </div>
                         </div>
                     </div>
@@ -28,7 +28,7 @@
                         <div class="card mb-3">
                             <div class="card-body">
                                 <h5 class="card-title">Login Count Today</h5>
-                                <p class="card-text">{{ $loginCountToday }}</p>
+                                {{-- <p class="card-text">{{ $loginCountToday }}</p> --}}
                             </div>
                         </div>
                     </div>
@@ -36,7 +36,7 @@
                         <div class="card mb-3">
                             <div class="card-body">
                                 <h5 class="card-title">Sales Count Today</h5>
-                                <p class="card-text">{{ $salesCountToday }}</p>
+                                {{-- <p class="card-text">{{ $salesCountToday }}</p> --}}
                             </div>
                         </div>
                     </div>
@@ -55,7 +55,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($businesses as $business)
+                        {{-- @foreach ($businesses as $business)
                             <tr>
                                 <td>{{ $business->name }}</td>
                                 <td>{{ $business->productsCount }}</td>
@@ -65,7 +65,7 @@
                                 <td>{{ $business->loginCountLast10Days }}</td>
                                 <td>{{ $business->salesCountLast10Days }}</td>
                             </tr>
-                        @endforeach
+                        @endforeach --}}
                     </tbody>
                 </table>
             </div>
