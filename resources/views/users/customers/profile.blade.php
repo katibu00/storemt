@@ -87,7 +87,7 @@
                                                                 ->where('business_id', auth()->user()->business_id)
                                                                 ->get(); 
                                                             $returns = App\Models\Returns::select('product_id', 'price', 'quantity', 'discount', 'payment_method')
-                                                                ->where('return_no', 'R'.$date->receipt_no)
+                                                                ->where('receipt_no', 'R'.$date->receipt_no)
                                                                 ->where('business_id', auth()->user()->business_id)
                                                                 ->get();
                                                         @endphp
@@ -410,7 +410,7 @@
                                             ->get();
 
                                         $returns = App\Models\Returns::select('product_id', 'price', 'quantity', 'discount', 'payment_method')
-                                                ->where('return_no', 'R'.$date->receipt_no)
+                                                ->where('receipt_no', 'R'.$date->receipt_no)
                                                 ->where('business_id', auth()->user()->business_id)
                                                 ->where('branch_id', auth()->user()->branch_id)
                                                 ->get();
