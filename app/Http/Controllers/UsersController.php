@@ -370,6 +370,8 @@ class UsersController extends Controller
                     $receiptNo = $request->receipt_no[$i];
                     $sales = DB::table('sales')
                         ->where('receipt_no', $receiptNo)
+                        ->where('business_id', $businessId)
+                        ->where('branch_id', $branchId)
                         ->get();
                     $total_amount = 0;
                     if ($sales[0]->status) {
@@ -466,7 +468,6 @@ class UsersController extends Controller
 
                         DB::commit();
 
-                        // Success message or redirect
                         if ($request->payment_method == 'deposit') {
                             $customer->deposit -= $request->partial_amount[$i];
                             $customer->balance -= $request->partial_amount[$i];
@@ -579,7 +580,6 @@ class UsersController extends Controller
 
     public function loadReceipt(Request $request)
     {
-        // return $request->all();
         $payment = Payment::find($request->payment_id);
         $date = $payment->created_at->format('l, d F, Y');
         @$balance = User::select('balance')->where('id', $payment->customer_id)->first();
@@ -604,8 +604,14 @@ class UsersController extends Controller
 
     public function returnIndex(Request $request)
     {
+        $businessId = auth()->user()->business_id;
+        $branchId = auth()->user()->branch_id;
+
         $id = $request->input('id');
-        $sale = Sale::where('receipt_no',$id)->first();
+        $sale = Sale::where('receipt_no',$id)
+        ->where('business_id', $businessId)
+        ->where('branch_id', $branchId)
+        ->first();
 
         $data['sales'] = Sale::select('id', 'product_id', 'price', 'quantity', 'discount', 'status', 'payment_amount', 'customer_id', 'returned_qty')
             ->where('receipt_no', $id)
@@ -620,7 +626,15 @@ class UsersController extends Controller
     {
         $sale = Sale::find($request->sale_id[0]);
 
-        $sales = Sale::where('receipt_no', $sale->receipt_no)->where('customer_id', $sale->customer_id)->get(); 
+        $businessId = auth()->user()->business_id;
+        $branchId = auth()->user()->branch_id;
+
+        $sales = Sale::where('receipt_no', $sale->receipt_no)
+        ->where('customer_id', $sale->customer_id)
+        ->where('business_id', $businessId)
+        ->where('branch_id', $branchId)
+        ->get();
+         
         $net_amount = 0;
        
         foreach($sales as $sale)

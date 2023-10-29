@@ -12,10 +12,10 @@ class Sale extends Model
     public function product(){
         return $this->belongsTo(Product::class, 'product_id','id');
     }
-    public function user(){
-        return $this->belongsTo(User::class, 'user_id','id');
+    public function staff(){
+        return $this->belongsTo(User::class, 'staff_id','id');
     }
     public function customer(){
-        return $this->belongsTo(User::class, 'customer_name','id');
+        return $this->belongsTo(User::class, 'customer_id','id');
     }
 }

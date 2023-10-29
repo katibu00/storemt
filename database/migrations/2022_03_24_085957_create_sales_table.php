@@ -26,7 +26,6 @@ class CreateSalesTable extends Migration
             $table->integer('payment_amount')->nullable();
             $table->unsignedBigInteger('staff_id')->nullable();
             $table->unsignedBigInteger('customer_id')->nullable();
-            $table->string('customer_name')->nullable();
             $table->string('note')->nullable();
             $table->string('status')->nullable();
             $table->integer('returned_qty')->default(0);

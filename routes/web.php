@@ -260,3 +260,7 @@ Route::group(['prefix' => 'customers', 'middleware' => ['auth', 'staff']], funct
 Route::get('/post-data', [ApiController::class, 'store'])->name('post-data');
 
 Route::get('/fetch_stocks', [ReportController::class, 'fetchStocks'])->name('fetch_stocks');
+
+
+Route::get('/get-product-suggestions',[SalesController::class, 'getProductSuggestions']);
+Route::get('/fetch-credit-balance', [SalesController::class, 'fetchBalanceOrDeposit']);

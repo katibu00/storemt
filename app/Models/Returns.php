@@ -16,4 +16,8 @@ class Returns extends Model
     public function customer(){
         return $this->belongsTo(User::class, 'customer_id','id');
     }
+
+    public function staff(){
+        return $this->belongsTo(User::class, 'staff_id','id');
+    }
 }

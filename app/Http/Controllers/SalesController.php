@@ -8,155 +8,246 @@ use App\Models\Sale;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use App\Models\Estimate;
+use App\Models\Expense;
+use App\Models\Returns;
+
 
 class SalesController extends Controller
 {
+   
     public function index()
     {
         $user = auth()->user();
-        $data['products'] = Product::where('business_id', $user->business_id)
-            ->where('branch_id', $user->branch_id)
-            ->orderBy('name')->get();
-        $data['recents'] = Sale::select('product_id', 'receipt_no')
-            ->whereDate('created_at', Carbon::today())
-            ->where('staff_id', $user->id)
-            ->where('business_id', $user->business_id)
-            ->where('branch_id', $user->branch_id)
-            ->groupBy('receipt_no')
+        $products = Product::where('branch_id', $user->branch_id)->orderBy('name')->get();
+        $customers = User::select('id', 'name')->where('usertype', 'customer')->where('branch_id', $user->branch_id)->where('business_id',$user->business_id)->orderBy('name')->get();
+
+        $latestTransactions = DB::table('sales')
+            ->select('receipt_no as transaction_no', 'created_at', DB::raw("'Sales' as type"))
+            ->where('business_id',$user->business_id)
+            ->where('branch_id', $user->branch_id);
+
+        $latestTransactions->union(
+            DB::table('estimates')
+                ->select('receipt_no as transaction_no', 'created_at', DB::raw("'Estimates' as type"))
+                ->where('business_id',$user->business_id)
+                ->where('branch_id', $user->branch_id)
+        );
+
+        $latestTransactions->union(
+            DB::table('returns')
+                ->select('receipt_no as transaction_no', 'created_at', DB::raw("'Returns' as type"))
+                ->where('business_id',$user->business_id)
+                ->where('branch_id', $user->branch_id)
+        );
+
+        $latestTransactions = $latestTransactions
             ->orderBy('created_at', 'desc')
-            ->take(4)
+            ->groupBy('transaction_no')
+            ->take(3)
             ->get();
-        $data['sold_items'] = [];
-        return view('sales.index', $data);
 
-    }
-    public function creditIndex()
-    {
-        $user = auth()->user();
-        $data['products'] = Product::where('business_id', $user->business_id)
-            ->where('branch_id', $user->branch_id)
-            ->orderBy('name')->get();
+        $transactionData = [];
 
-        $data['recents'] = Sale::select('product_id', 'receipt_no', 'customer_id')
-            ->whereDate('created_at', Carbon::today())
-            ->where('business_id', auth()->user()->business_id)
-            ->where('branch_id', $user->branch_id)
-            ->where('staff_id', auth()->user()->id)
-            ->groupBy('receipt_no')
-            ->orderBy('created_at', 'desc')
-            ->take(4)
-            ->get();
-        $data['sold_items'] = [];
-        $data['customers'] = User::select('id', 'name')
-            ->where('usertype', 'customer')
-            ->where('business_id', $user->business_id)
-            ->where('branch_id', $user->branch_id)
-            ->orderBy('name')->get();
+        foreach ($latestTransactions as $transaction) {
+            $table = $transaction->type == 'Sales' ? 'sales' : ($transaction->type == 'Returns' ? 'returns' : 'estimates');
 
-        return view('sales.credit.index', $data);
+            $rows = DB::table($table)
+                ->where('branch_id', $user->branch_id)
+                ->where('business_id',$user->business_id)
+                ->where($transaction->type == 'Sales' ? 'receipt_no' : ($transaction->type == 'Returns' ? 'receipt_no' : 'receipt_no'), $transaction->transaction_no)
+                ->get();
 
-    }
-    public function fetchBalance(Request $request)
-    {
+            $totalAmount = 0;
+            foreach ($rows as $row) {
+                $totalAmount += ($row->price * $row->quantity) - $row->discount;
+            }
 
-        $user = User::select('balance','deposit')->where('id', $request->customer_id)->first();
+            // Fetch the customer information for this transaction
+            $customer = null;
+            if ($transaction->type == 'Sales') {
+                $sale = DB::table('sales')->where('receipt_no', $transaction->transaction_no)->where('branch_id',$user->branch_id)->where('business_id',$user->business_id)->first();
+                // if (!is_null($sale) && is_numeric($sale->customer)) {
+                    $customer = User::find($sale->customer_id);
+                // }
+            }
 
-        if ($user) {
-            return response()->json([
-                'status' => 200,
-                'balance' => $user->balance,
-                'deposits' => $user->deposit,
-            ]);
-        } else {
-            return response()->json([
-                'status' => 404,
-            ]);
+            $transactionData[] = [
+                'transaction_no' => $transaction->transaction_no,
+                'type' => $transaction->type,
+                'created_at' => $transaction->created_at,
+                'totalAmount' => $totalAmount,
+                'customer' => $customer,
+            ];
         }
 
+        return view('transactions.index', compact('transactionData', 'products', 'customers'));
+    }
+
+    public function getProductSuggestions(Request $request)
+    {
+        $query = $request->input('query');
+        $suggestions = Product::where('name', 'like', '%' . $query . '%')
+            ->where('business_id', auth()->user()->business_id)
+            ->where('branch_id', auth()->user()->branch_id)
+            ->limit(20)
+            ->get();
+
+        return response()->json($suggestions);
     }
 
     public function store(Request $request)
     {
-        $user = auth()->user();
-        $year = date('Y');
-        $month = Carbon::now()->format('m');
-        $day = Carbon::now()->format('d');
-        $last = Sale::where('business_id', $user->business_id)->where('branch_id', $user->branch_id)->whereDate('created_at', '=', date('Y-m-d'))->latest()->first();
-        if ($last == null) {
-            $last_record = '1/0';
-        } else {
-            $last_record = $last->receipt_no;
-        }
-        $exploded = explode("/", $last_record);
-        $number = $exploded[1] + 1;
-        $padded = sprintf("%04d", $number);
-        $stored = $year . $month . $day . '/' . $padded;
-        $productCount = count($request->product_id);
-        if ($productCount != null) {
-            for ($i = 0; $i < $productCount; $i++) {
+        $transaction_type = $request->input('transaction_type');
 
+        if ($transaction_type == "sales") {
+            if (in_array(null, $request->quantity, true)) {
+                return response()->json([
+                    'status' => 400,
+                    'message' => 'Quantity cannot be empty for any product.',
+                ]);
+            }
+
+            $paymentMethod = $request->input('payment_method');
+
+            $year = date('Y');
+            $month = Carbon::now()->format('m');
+            $day = Carbon::now()->format('d');
+            $last = Sale::whereDate('created_at', '=', date('Y-m-d'))->latest()->first();
+            $lastRecord = $last ? $last->receipt_no : '1/0';
+            [$prefix, $number] = explode("/", $lastRecord);
+            $number = sprintf("%04d", $number + 1);
+            $trxId = $year . $month . $day . '/' . $number;
+
+            $totalPrice = 0;
+            foreach ($request->product_id as $index => $productId) {
+                $productTotal = ($request->price[$index] * $request->quantity[$index]) - ($request->discount[$index] ?? 0);
+                $totalPrice += $productTotal;
+            }
+            if ($paymentMethod == 'deposit') {
+
+                $deposits = Payment::select('payment_amount')->where('customer_id', $request->customer)->where('payment_type', 'deposit')->sum('payment_amount');
+                if ($totalPrice > $deposits) {
+                    return response()->json([
+                        'status' => 400,
+                        'message' => 'Deposit Balance is low. Reduce Quantity and Try again',
+                    ]);
+                }
+
+                $user = User::find($request->customer);
+                $user->deposit -= $totalPrice;
+                $user->update();
+
+            } elseif ($paymentMethod == 'credit') {
+                $user = User::find($request->customer);
+                $user->balance += $totalPrice;
+                $user->update();
+
+            } else {
+
+            }
+
+            foreach ($request->product_id as $index => $productId) {
                 $data = new Sale();
-                $data->business_id = $user->business_id;
-                $data->branch_id = $user->branch_id;
-                $data->receipt_no = $stored;
-                $data->product_id = $request->product_id[$i];
-                $data->price = $request->price[$i];
-                $data->quantity = $request->quantity[$i];
-                if ($request->discount[$i] == null) {
-                    $data->discount = 0;
-
-                } else {
-                    $data->discount = $request->discount[$i];
-                }
-                $data->payment_method = $request->payment_method;
+                $data->business_id = auth()->user()->business_id;
+                $data->branch_id = auth()->user()->branch_id;
+                $data->receipt_no = $trxId;
+                $data->product_id = $productId;
+                $data->price = $request->price[$index];
+                $data->quantity = $request->quantity[$index];
+                $data->discount = $request->discount[$index] ?? 0;
+                $data->payment_method = $paymentMethod;
                 $data->staff_id = auth()->user()->id;
-               
-                if (is_numeric($request->customer_name)) {
-                    $data->customer_id = $request->customer_name;
-                } else {
-                    $data->customer_name = $request->customer_name;
-                }
-                
+                $data->customer_id = $request->customer === '0' ? null : $request->customer;
                 $data->note = $request->note;
+                $data->payment_method = $paymentMethod;
+
+                // Handle labor cost if necessary
+                if ($request->input('toggleLabor')) {
+                    $data->labor_cost = $request->input('labor_cost');
+                }
 
                 $data->save();
 
-                $data = Product::find($request->product_id[$i]);
-                $data->quantity -= $request->quantity[$i];
-                $data->update();
-
+                // Update stock quantity
+                $stock = Product::find($productId);
+                $stock->quantity -= $request->quantity[$index];
+                $stock->update();
             }
+
+            return response()->json([
+                'status' => 201,
+                'message' => 'Sale has been recorded successfully',
+            ]);
         }
 
-        return response()->json([
-            'status' => 201,
-            'message' => 'Sale has been recorded sucessfully',
-        ]);
+        if ($transaction_type == "estimate") {
+            $year = date('Y');
+            $month = Carbon::now()->format('m');
+            $day = Carbon::now()->format('d');
+            $last = Estimate::whereDate('created_at', '=', date('Y-m-d'))->latest()->first();
+            if ($last == null) {
+                $last_record = '1/0';
+            } else {
+                $last_record = $last->receipt_no;
+            }
+            $exploded = explode("/", $last_record);
+            $number = $exploded[1] + 1;
+            $padded = sprintf("%04d", $number);
+            $stored = $year . $month . $day . '/' . $padded;
 
-    }
-    public function creditStore(Request $request)
-    {
-        if ($request->payment_method == 'deposit') {
-
-            $total_price = 0;
             $productCount = count($request->product_id);
             if ($productCount != null) {
                 for ($i = 0; $i < $productCount; $i++) {
-                    $total_price += ($request->price[$i] * $request->quantity[$i]) - $request->discount[$i];
+
+                    $data = new Estimate();
+                    $data->business_id = auth()->user()->business_id;
+                    $data->branch_id = auth()->user()->branch_id;
+                    $data->receipt_no = $stored;
+                    $data->product_id = $request->product_id[$i];
+                    $data->price = $request->price[$i];
+                    $data->quantity = $request->quantity[$i];
+                    if ($request->discount[$i] == null) {
+                        $data->discount = 0;
+
+                    } else {
+                        $data->discount = $request->discount[$i];
+                    }
+                    $data->staff_id = auth()->user()->id;
+                    $data->customer_id = $request->customer;
+                    $data->note = $request->note;
+                    if ($request->input('toggleLabor')) {
+                        $data->labor_cost = $request->input('labor_cost');
+                    }
+                    $data->save();
                 }
             }
-            $deposits = Payment::select('payment_amount')->where('business_id', auth()->user()->business_id)->where('customer_id', $request->customer_id)->where('payment_type', 'deposit')->sum('payment_amount');
-            if ($total_price > $deposits) {
+
+            return response()->json([
+                'status' => 201,
+                'message' => 'Estimate has been Saved sucessfully',
+            ]);
+        }
+
+        if ($transaction_type == "return") {
+            $total_price = collect($request->quantity)
+                ->map(function ($quantity, $index) use ($request) {
+                    return ($quantity * $request->price[$index]) - $request->discount[$index];
+                })
+                ->sum();
+
+            if (!$this->checkBalance($request->payment_method, $total_price)) {
                 return response()->json([
                     'status' => 400,
-                    'message' => 'Deposit Balance is low. Reduce Quantity and Try again',
+                    'message' => 'Low Balance in the Payment Channel.',
                 ]);
             }
 
             $year = date('Y');
             $month = Carbon::now()->format('m');
             $day = Carbon::now()->format('d');
-            $last = Sale::where('business_id', auth()->user()->business_id)->whereDate('created_at', '=', date('Y-m-d'))->latest()->first();
+            $last = Returns::whereDate('created_at', '=', date('Y-m-d'))->latest()->first();
             if ($last == null) {
                 $last_record = '1/0';
             } else {
@@ -166,13 +257,12 @@ class SalesController extends Controller
             $number = $exploded[1] + 1;
             $padded = sprintf("%04d", $number);
             $stored = $year . $month . $day . '/' . $padded;
-            $total_price = 0;
-            $discount = 0;
+
             $productCount = count($request->product_id);
             if ($productCount != null) {
                 for ($i = 0; $i < $productCount; $i++) {
 
-                    $data = new Sale();
+                    $data = new Returns();
                     $data->business_id = auth()->user()->business_id;
                     $data->branch_id = auth()->user()->branch_id;
                     $data->receipt_no = $stored;
@@ -180,118 +270,217 @@ class SalesController extends Controller
                     $data->price = $request->price[$i];
                     $data->quantity = $request->quantity[$i];
                     if ($request->discount[$i] == null) {
-                        $discount = 0;
+                        $data->discount = 0;
 
                     } else {
-                        $discount = $request->discount[$i];
+                        $data->discount = $request->discount[$i];
                     }
-                    $data->discount = $discount;
-                    $data->payment_method = 'deposit';
                     $data->staff_id = auth()->user()->id;
-                    $data->customer_id = $request->customer_id;
+                    $data->customer_id = $request->customer;
                     $data->note = $request->note;
+                    $data->payment_method = $request->payment_method;
                     $data->save();
 
                     $data = Product::find($request->product_id[$i]);
-                    $data->quantity -= $request->quantity[$i];
+                    $data->quantity += $request->quantity[$i];
                     $data->update();
-
-                    $total_price += ($request->price[$i] * $request->quantity[$i]) - $discount;
 
                 }
             }
 
-            $customer_id = request()->input('customer_id');
-            Payment::where('customer_id', $customer_id)->update(['payment_type' => 'used']);
-            if ($total_price - $deposits != 0) {
-                $balance = Payment::where('customer_id', $customer_id)->where('payment_type', 'used')->latest()->first();
-                $balance->payment_type = 'deposit';
-                $balance->payment_amount = $deposits - $total_price;
-                $balance->update();
-            }
-
             return response()->json([
                 'status' => 201,
-                'message' => 'Deposit Sale has been recorded sucessfully',
+                'message' => 'Return has been saved sucessfully',
             ]);
 
-        } else {
-
-            $year = date('Y');
-            $month = Carbon::now()->format('m');
-            $day = Carbon::now()->format('d');
-            $last = Sale::where('business_id', auth()->user()->business_id)->whereDate('created_at', '=', date('Y-m-d'))->latest()->first();
-            if ($last == null) {
-                $last_record = '1/0';
-            } else {
-                $last_record = $last->receipt_no;
-            }
-            $exploded = explode("/", $last_record);
-            $number = $exploded[1] + 1;
-            $padded = sprintf("%04d", $number);
-            $stored = $year . $month . $day . '/' . $padded;
-            $total_price = 0;
-            $discount = 0;
-            $productCount = count($request->product_id);
-            if ($productCount != null) {
-                for ($i = 0; $i < $productCount; $i++) {
-
-                    $data = new Sale();
-                    $data->business_id = auth()->user()->business_id;
-                    $data->branch_id = auth()->user()->branch_id;
-                    $data->receipt_no = $stored;
-                    $data->product_id = $request->product_id[$i];
-                    $data->price = $request->price[$i];
-                    $data->quantity = $request->quantity[$i];
-                    if ($request->discount[$i] == null) {
-                        $discount = 0;
-
-                    } else {
-                        $discount = $request->discount[$i];
-                    }
-                    $data->discount = $discount;
-                    $data->payment_method = 'credit';
-                    $data->staff_id = auth()->user()->id;
-                    $data->customer_id = $request->customer_id;
-                    $data->note = $request->note;
-                    $data->save();
-
-                    $data = Product::find($request->product_id[$i]);
-                    $data->quantity -= $request->quantity[$i];
-                    $data->update();
-
-                    $total_price += ($request->price[$i] * $request->quantity[$i]) - $discount;
-
-                }
-            }
-
-            $user = User::find($request->customer_id);
-            $user->balance += $total_price;
-            $user->update();
-
-            return response()->json([
-                'status' => 201,
-                'message' => 'Credit Sale has been recorded sucessfully',
-            ]);
         }
 
     }
 
+    private function checkBalance($paymentMethod, $totalPrice)
+    {
+        $user = auth()->user();
+
+        $todaySales = Sale::where('branch_id', $user->branch_id)
+            ->where('business_id',$user->business_id)
+            ->where('payment_method', $paymentMethod)
+            ->whereNotIn('product_id', [1093, 1012])
+            ->whereDate('created_at', today())
+            ->get();
+
+        $todayReturns = Returns::where('branch_id', $user->branch_id)
+            ->where('business_id',$user->business_id)
+            ->where('payment_method', $paymentMethod)
+            ->whereDate('created_at', today())
+            ->get();
+
+        $expenses = Expense::where('branch_id', $user->branch_id)
+            ->where('business_id',$user->business_id)
+            ->where('payment_method', $paymentMethod)
+            ->whereDate('created_at', today())
+            ->sum('amount');
+
+        $creditRepayments = Payment::where('branch_id', $user->branch_id)
+            ->where('business_id',$user->business_id)
+            ->where('payment_method', $paymentMethod)
+            ->where('payment_type', 'credit')
+            ->whereDate('created_at', today())
+            ->sum('payment_amount');
+
+        $deposits = Payment::where('branch_id', $user->branch_id)
+            ->where('business_id',$user->business_id)
+            ->where('payment_method', $paymentMethod)
+            ->where('payment_type', 'deposit')
+            ->whereDate('created_at', today())
+            ->sum('payment_amount');
+
+       
+
+        $totalSales = $todaySales->sum(function ($sale) {
+            return ($sale->price * $sale->quantity) - $sale->discount;
+        });
+
+        $totalReturns = $todayReturns->sum(function ($return) {
+            return ($return->price * $return->quantity) - $return->discount;
+        });
+
+        $netAmount = $totalSales + $deposits + $creditRepayments - ($totalReturns + $expenses);
+
+       
+
+        return ($totalPrice <= $netAmount);
+    }
+   
+    public function fetchBalanceOrDeposit(Request $request)
+    {
+        $userId = $request->input('user_id');
+        $paymentMethod = $request->input('payment_method'); // Get the selected payment method
+
+        $user = User::find($userId);
+
+        if (!$user) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+
+        $balanceOrDeposit = 0; // Initialize the variable to store the balance or deposit
+
+        if ($paymentMethod === 'credit') {
+            $balanceOrDeposit = $user->balance; // Fetch the user's balance
+        } elseif ($paymentMethod === 'deposit') {
+            $balanceOrDeposit = $user->deposit; // Fetch the user's deposit
+        }
+
+        return response()->json(['balance_or_deposit' => $balanceOrDeposit], 200);
+    }
+
     public function refresh(Request $request)
     {
-        $data['recents'] = Sale::select('product_id', 'receipt_no')->where('business_id', auth()->user()->business_id)->where('branch_id', auth()->user()->branch_id)->whereDate('created_at', Carbon::today())->where('staff_id', auth()->user()->id)->groupBy('receipt_no')->orderBy('created_at', 'desc')->take(4)->get();
-        return view('sales.recent_sales_table', $data)->render();
+        $user = auth()->user();
+
+        $latestTransactions = DB::table('sales')
+            ->select('receipt_no as transaction_no', 'created_at', DB::raw("'Sales' as type"))
+            ->where('business_id',$user->business_id)
+            ->where('branch_id', $user->branch_id);
+            
+
+        $latestTransactions->union(
+            DB::table('estimates')
+                ->select('receipt_no as transaction_no', 'created_at', DB::raw("'Estimates' as type"))
+                ->where('business_id',$user->business_id)
+                ->where('branch_id', $user->branch_id)
+        );
+
+        $latestTransactions->union(
+            DB::table('returns')
+                ->select('receipt_no as transaction_no', 'created_at', DB::raw("'Returns' as type"))
+                ->where('business_id',$user->business_id)
+                ->where('branch_id', $user->branch_id)
+        );
+
+        $latestTransactions = $latestTransactions
+            ->orderBy('created_at', 'desc')
+            ->groupBy('transaction_no')
+            ->take(3)
+            ->get();
+
+        $transactionData = [];
+
+        foreach ($latestTransactions as $transaction) {
+            $table = $transaction->type == 'Sales' ? 'sales' : ($transaction->type == 'Returns' ? 'returns' : 'estimates');
+
+            $rows = DB::table($table)
+                ->where('business_id',$user->business_id)
+                ->where('branch_id', $user->branch_id)
+                ->where($transaction->type == 'Sales' ? 'receipt_no' : ($transaction->type == 'Returns' ? 'receipt_no' : 'receipt_no'), $transaction->transaction_no)
+                ->get();
+
+            $totalAmount = 0;
+            foreach ($rows as $row) {
+                $totalAmount += ($row->price * $row->quantity) - $row->discount;
+            }
+
+            // Fetch the customer information for this transaction
+            $customer = null;
+            if ($transaction->type == 'Sales') {
+                $sale = DB::table('sales')->where('business_id',$user->business_id)->where('branch_id',$user->branch_id)->where('receipt_no', $transaction->transaction_no)->first();
+                if (!is_null($sale) && is_numeric($sale->customer_id)) {
+                    $customer = User::find($sale->customer_id);
+                }
+            }
+
+            $transactionData[] = [
+                'transaction_no' => $transaction->transaction_no,
+                'type' => $transaction->type,
+                'created_at' => $transaction->created_at,
+                'totalAmount' => $totalAmount,
+                'customer' => $customer,
+            ];
+        }
+
+        return view('transactions.recent_transactions_table', compact('transactionData'))->render();
     }
     
     public function loadReceipt(Request $request)
     {
-        $items = Sale::with('product')->where('business_id', auth()->user()->business_id)->where('branch_id', auth()->user()->branch_id)->where('receipt_no', $request->receipt_no)->get();
-        $staff = User::select('name')->where('id',$items[0]->staff_id)->first();
+        $user = auth()->user();
+
+        $transactionType = $request->transaction_type;
+        $transactionNo = $request->receipt_no;
+        $items = [];
+
+        if ($transactionType === 'Sales') {
+            $items = Sale::with('product','staff:name,id')
+                ->where('receipt_no', $transactionNo)
+                ->where('business_id',$user->business_id)
+                ->where('branch_id',$user->branch_id)
+                ->get();
+
+        } elseif ($transactionType === 'Returns') {
+            $items = Returns::with('product','staff:name,id')
+                ->where('receipt_no', $transactionNo)
+                ->where('business_id',$user->business_id)
+                ->where('branch_id',$user->branch_id)
+                ->get();
+        } elseif ($transactionType === 'Estimates') {
+            $items = Estimate::with('product','staff:name,id')
+                ->where('receipt_no', $transactionNo)
+                ->where('business_id',$user->business_id)
+                ->where('branch_id',$user->branch_id)
+                ->get();
+        }
+        if(!$transactionType)
+        {
+            $items = Sale::with('product')
+                ->where('receipt_no', $request->receipt_no)
+                ->where('business_id',$user->business_id)
+                ->where('branch_id',$user->branch_id)
+                ->get();
+        }
         return response()->json([
             'status' => 200,
             'items' => $items,
-            'staff' => $staff->name,
         ]);
+
     }
 
     public function allIndex()
@@ -325,7 +514,7 @@ class SalesController extends Controller
 
     public function filterSales(Request $request)
     {
-        $cashierId = $request->input('cashier_id');
+        $cashierId = $request->input('staff_id');
         $transactionType = $request->input('transaction_type');
 
         $query = Sale::select('product_id', 'receipt_no')
