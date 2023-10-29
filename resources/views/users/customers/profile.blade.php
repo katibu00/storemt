@@ -555,6 +555,7 @@
                     </div>
                     <!-- Add more input fields for editing other deposit details if needed -->
                     <input type="hidden" id="depositId" name="deposit_id">
+                    <input type="hidden" id="userId" name="user_id">
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -564,7 +565,6 @@
         </div>
     </div>
 </div>
-
 
 <div class="modal fade" id="addPaymentModal" tabindex="-1" role="dialog" aria-labelledby="addPaymentModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -581,7 +581,7 @@
                             <label for="paymentAmount" class="col-form-label">Payment Amount:</label>
                             <input type="number" step="any" class="form-control" placeholder="Amount" name="paymentAmount" required>
                         </div>
-                        <input type="hidden" value="{{ $user->id }}" name="customer_id">
+                        <input type="hidden" value="{{ $user->id }}" id="customer_id" name="customer_id">
                         <div class="form-group col-md-6">
                             <label for="paymentMethod" class="col-form-label">Payment Method:</label>
                             <select class="form-select" id="paymentMethod" name="paymentMethod" required>
@@ -606,26 +606,23 @@
     </div>
 </div>
 
-
 @endsection
 
 @section('js')
-
 
 <script>
     function editDeposit(depositId, paymentAmount) {
         $('#editModal').find('#depositId').val(depositId);
         $('#editModal').find('#paymentAmount').val(paymentAmount);
-
         $('#editModal').modal('show');
     }
 
     $('#editForm').submit(function(e) {
         e.preventDefault();
 
-        // Get the form data
         var depositId = $('#editModal').find('#depositId').val();
         var newPaymentAmount = $('#editModal').find('#paymentAmount').val();
+        var customer_id =   $('#customer_id').val();
 
         $.ajaxSetup({
             headers: {
@@ -635,7 +632,7 @@
         $.ajax({
             url: '{{ route('customers.update.deposit') }}',
             type: 'POST',
-            data: { 'depositId':depositId, 'payment_amount': newPaymentAmount },
+            data: { 'depositId':depositId, 'payment_amount': newPaymentAmount,'customer_id':customer_id },
             success: function(response) {
                
                 toastr.success(response.message);
@@ -648,8 +645,6 @@
         });
     });
 </script>
-
-
 
 <script>
     jQuery( "#tabs-profile" ).on( "tabsactivate", function( event, ui ) {
@@ -670,7 +665,6 @@
                 $(this).closest('tr').find('.partial-amount').removeClass('d-none');
                 $(this).closest('tr').find('.holdtd').addClass('d-none');
                 var price = $(this).closest('tr').find('td:eq(2)').text();
-
             } else {
                 $(this).closest('tr').find('.partial-amount').addClass('d-none');
                 $(this).closest('tr').find('.holdtd').removeClass('d-none');
@@ -679,21 +673,17 @@
             if (selectedOption === 'Full Payment') {
 
                 var full_paid = $(this).closest('tr').find('td:eq(2)').text();
-                // console.log(full_paid);
                 new_grand_total = (parseInt(grand_total) - parseInt(full_paid));
                 $('#grand_total_span').html(parseInt(new_grand_total));
-
             }
 
         });
-
 
         $(".partial-amount-input").on("keyup", function() {
             var partial_paid = $(this).val();
             var price = $(this).closest('tr').find('td:eq(2)').text();
             new_grand_total = grand_total - partial_paid;
             $('#grand_total_span').html(new_grand_total);
-
         });
 
     });
@@ -723,15 +713,7 @@
 
                 html += `The payment of &#8358;${res.payment.payment_amount.toLocaleString()} was paid to the above named business on ${res.date} in settlement of Sales Receipt ${res.payment.receipt_nos}. <br/> Your Updated Current Balance is &#8358;${res.balance.toLocaleString()}`
                 
-                // html +=
-                //     '<tr style="text-align: center">' +
-                //     '<td></td>' +
-                //     '<td colspan="2"><b>Total Amount</b></td>' +
-                //     '<td><b>&#8358;' + total.toLocaleString() + '</b></td>' +
-                //     '</tr>';
-
                 html = $('#content-body').html(html);
-                // $('.tran_id').html('S' + res.items[0].receipt_no);
 
                 var data = document.getElementById('print').innerHTML;
 
