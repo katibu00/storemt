@@ -84,10 +84,12 @@
                                                             $sales = App\Models\Sale::select('product_id', 'price', 'quantity', 'discount', 'status', 'payment_amount')
                                                                 ->where('receipt_no', $date->receipt_no)
                                                                 ->where('customer_id', $user->id)
+                                                                ->where('branch_id', auth()->user()->branch_id)
                                                                 ->where('business_id', auth()->user()->business_id)
                                                                 ->get(); 
                                                             $returns = App\Models\Returns::select('product_id', 'price', 'quantity', 'discount', 'payment_method')
                                                                 ->where('receipt_no', 'R'.$date->receipt_no)
+                                                                ->where('branch_id', auth()->user()->branch_id)
                                                                 ->where('business_id', auth()->user()->business_id)
                                                                 ->get();
                                                         @endphp
@@ -407,6 +409,7 @@
                                             ->where('receipt_no', $date->receipt_no)
                                             ->where('customer_id', $user->id)
                                             ->where('business_id', auth()->user()->business_id)
+                                            ->where('branch_id', auth()->user()->branch_id)
                                             ->get();
 
                                         $returns = App\Models\Returns::select('product_id', 'price', 'quantity', 'discount', 'payment_method')
