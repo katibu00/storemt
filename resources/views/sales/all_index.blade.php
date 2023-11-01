@@ -201,7 +201,7 @@
 
     <script>
         $(document).ready(function() {
-            $('#cashier_id, #transaction_type').on('change', function() {
+            $('#staff_id, #transaction_type').on('change', function() {
 
                 var staffId = $('#staff_id').val();
                 var transactionType = $('#transaction_type').val();
