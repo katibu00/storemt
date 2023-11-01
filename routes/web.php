@@ -209,6 +209,12 @@ Route::group(['prefix' => 'branches', 'middleware' => ['auth', 'admin']], functi
     Route::get('/index', [BranchesController::class, 'index'])->name('branches.index');
     Route::post('/store', [BranchesController::class, 'store'])->name('branches.store');
     Route::post('/delete', [BranchesController::class, 'delete'])->name('branches.delete');
+
+    Route::get('branches/{branch}/edit', [BranchesController::class, 'edit'])->name('branches.edit');
+    Route::put('branches/{branch}', [BranchesController::class, 'update'])->name('branches.update');
+
+    Route::delete('branches/{branch}', [BranchesController::class, 'destroy'])->name('branches.destroy');
+
 });
 
 Route::group(['prefix' => 'returns', 'middleware' => ['auth', 'staff']], function () {

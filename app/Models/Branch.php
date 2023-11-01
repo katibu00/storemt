@@ -18,4 +18,13 @@ class Branch extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    protected $fillable = [
+        'name',
+        'business_id',
+        'address',
+        'phone',
+        'email',
+        'manager_id',
+    ];
 }

@@ -367,36 +367,33 @@ class HomeController extends Controller
 
         //////////////
 
-        if(auth()->user()->business->has_branches)
-        {
-
+        if (auth()->user()->business->has_branches) {
             $yesterday = Carbon::yesterday();
-
+        
             $salesByBranch = DB::table('sales')
                 ->join('branches', 'sales.branch_id', '=', 'branches.id')
-                ->select('branches.name', DB::raw('SUM(price * quantity - discount) AS revenue'))
-                ->where('business_id', $business_id)
+                ->select('branches.name', DB::raw('SUM(sales.price * sales.quantity - sales.discount) AS revenue'))
+                ->where('sales.business_id', $business_id) 
                 ->whereDate('sales.created_at', $yesterday)
                 ->groupBy('sales.branch_id')
                 ->get();
-    
+        
             $pieChartData = [
                 'labels' => [],
                 'data' => [],
                 'backgroundColor' => [],
             ];
-    
+        
             // Prepare chart data
             foreach ($salesByBranch as $sale) {
                 $pieChartData['labels'][] = $sale->name;
                 $pieChartData['data'][] = $sale->revenue;
                 $pieChartData['backgroundColor'][] = '#' . substr(md5(rand()), 0, 6);
             }
-    
+        
             $data['pieChartData'] = $pieChartData;
-            
         }
-
+        
         return view('home.admin', $data);
 
     }

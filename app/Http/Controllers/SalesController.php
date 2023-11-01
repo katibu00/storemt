@@ -514,15 +514,15 @@ class SalesController extends Controller
 
     public function filterSales(Request $request)
     {
-        $cashierId = $request->input('staff_id');
+        $staffId = $request->input('staff_id');
         $transactionType = $request->input('transaction_type');
 
         $query = Sale::select('product_id', 'receipt_no')
             ->where('branch_id', auth()->user()->branch_id)
             ->where('business_id', auth()->user()->business_id);
 
-        if ($cashierId && $cashierId != 'all') {
-            $query->where('staff_id', $cashierId);
+        if ($staffId && $staffId != 'all') {
+            $query->where('staff_id', $staffId);
         }
 
         if ($transactionType && $transactionType != 'all') {

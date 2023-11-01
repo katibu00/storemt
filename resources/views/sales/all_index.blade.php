@@ -17,7 +17,7 @@
                         </div>
                         <div class="col-12 col-md-3 mb-2 mb-md-0">
                             <div class="form-group">
-                                <select class="form-select" id="cashier_id">
+                                <select class="form-select" id="staff_id">
                                     <option value="">Sort by Cashier</option>
                                     <option value="all">All</option>
                                     @foreach ($staffs as $staff)
@@ -203,7 +203,7 @@
         $(document).ready(function() {
             $('#cashier_id, #transaction_type').on('change', function() {
 
-                var cashierId = $('#cashier_id').val();
+                var staffId = $('#staff_id').val();
                 var transactionType = $('#transaction_type').val();
                 $.LoadingOverlay("show")
                 $('.pagination').hide();
@@ -217,7 +217,7 @@
                     url: '{{ route('sales.all.sort') }}',
                     method: 'POST',
                     data: {
-                        cashier_id: cashierId,
+                        staff_id: staffId,
                         transaction_type: transactionType
                     },
                     success: function(response) {

@@ -101,8 +101,9 @@ $business = App\Models\Business::where('id', auth()->user()->business_id)->first
                                 <div class="dropdown-menu dropdown-menu-end py-0 m-0" aria-labelledby="profilelink">
                                     @if(auth()->user()->usertype == 'admin')
                                     <a class="dropdown-item" href="{{ route('business.settings') }}"><i class="icon-line-cog me-2"></i>Settings</a>
-                                    <a class="dropdown-item" href="{{ route('sms.compose') }}"><i class="icon-line-mail me-2"></i>Compose SMS</a>
-                                    <a class="dropdown-item" href="{{ route('sms.balance') }}"><i class="icon-line-speech-bubble me-2"></i>SMS Balance</a>
+                                    <a class="dropdown-item" href="{{ route('branches.index') }}"><i class="icon-line-code me-2"></i> Branches</a>
+                                    {{-- <a class="dropdown-item" href="{{ route('sms.compose') }}"><i class="icon-line-mail me-2"></i>Compose SMS</a>
+                                    <a class="dropdown-item" href="{{ route('sms.balance') }}"><i class="icon-line-speech-bubble me-2"></i>SMS Balance</a> --}}
                                     <div class="line m-0"></div>
                                     @endif
                                     <a class="dropdown-item" href="{{ route('change.password') }}"><i class="icon-line-lock me-2"></i>Change Password</a>
