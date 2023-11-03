@@ -3,20 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\Branch;
+use App\Models\Business;
 use App\Models\Estimate;
 use App\Models\Expense;
+use App\Models\LoginLog;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\Purchase;
 use App\Models\Returns;
 use App\Models\Sale;
-use App\Models\Stock;
 use App\Models\User;
 use Brian2694\Toastr\Facades\Toastr;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+
 
 class HomeController extends Controller
 {
@@ -398,9 +399,67 @@ class HomeController extends Controller
 
     }
 
+  
+
     public function super()
     {
-        return view('home.super');
+        // Fetch all businesses
+        $businesses = Business::all();
+    
+        // Initialize an array to store insights
+        $insights = [];
+    
+        foreach ($businesses as $business) {
+            $insight = [];
+    
+            // Calculate total products for the business
+            $totalProducts = Product::where('business_id', $business->id)->count();
+    
+            // Find the last product upload date
+            $lastUploadDate = Carbon::parse($business->lastUploadDate);
+    
+            // Calculate sales count today
+            $salesCountToday = Sale::where('business_id', $business->id)
+                ->whereDate('created_at', Carbon::today())
+                ->count();
+    
+            // Find the last sales date
+            $lastSalesDate = Carbon::parse($business->lastSalesDate);
+    
+            // Calculate login count in the last 10 days
+            $loginCountLast10Days = LoginLog::where('business_id', $business->id)
+                ->whereDate('login_at', '>=', Carbon::today()->subDays(10))
+                ->count();
+    
+            // Calculate sales count in the last 10 days
+            $salesCountLast10Days = Sale::where('business_id', $business->id)
+                ->whereDate('created_at', '>=', Carbon::today()->subDays(10))
+                ->count();
+    
+            // Assign the insights to the array
+            $insight['business'] = $business;
+            $insight['totalProducts'] = $totalProducts;
+            $insight['lastUploadDate'] = $lastUploadDate;
+            $insight['salesCountToday'] = $salesCountToday;
+            $insight['lastSalesDate'] = $lastSalesDate;
+            $insight['loginCountLast10Days'] = $loginCountLast10Days;
+            $insight['salesCountLast10Days'] = $salesCountLast10Days;
+    
+            $insights[] = $insight;
+        }
+    
+        // Fetch additional data like registered businesses and users
+        $registeredBusinesses = Business::count();
+        $registeredUsers = User::count();
+        
+        // Total login count today
+        $loginCountToday = LoginLog::whereDate('login_at', Carbon::today())->count();
+        
+        // Total sales count today
+        $salesCountToday = Sale::whereDate('created_at', Carbon::today())->count();
+    
+        return view('home.super', compact('insights', 'registeredBusinesses', 'registeredUsers', 'loginCountToday', 'salesCountToday'));
     }
+    
 
 }

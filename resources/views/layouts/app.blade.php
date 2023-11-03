@@ -27,9 +27,10 @@ $business = App\Models\Business::where('id', auth()->user()->business_id)->first
     <link rel="stylesheet" href="/css/custom.css" type="text/css" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="/css/colors.php?color=0275d8" type="text/css" />
     @yield('css')
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/css/select2.min.css" integrity="sha512-arEjGlJIdHpZzNfZD2IidQjDZ+QY9r4VFJIm2M/DhXLjvvPyXFj+cIotmo0DLgvL3/DOlIaEDwzEiClEPQaAFQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />    
     <style>
         input::-webkit-outer-spin-button,
         input::-webkit-inner-spin-button {
@@ -94,22 +95,22 @@ $business = App\Models\Business::where('id', auth()->user()->business_id)->first
 
                             <!-- Top Account -->
                             <div class="header-misc-icon profile-image">
-                                <a href="#" id="profilelink" data-bs-toggle="dropdown" data-bs-offset="0,15"
-                                    aria-haspopup="true" aria-expanded="false" data-offset="12,12"><img
-                                        class="rounded-circle" src="/default.png"
-                                        alt="{{ auth()->user()->name }}"></a>
+                                <a href="#" id="profilelink" data-bs-toggle="dropdown" data-bs-offset="0,15" aria-haspopup="true" aria-expanded="false" data-offset="12,12">
+                                    <img class="rounded-circle" src="/default.png" alt="{{ auth()->user()->name }}">
+                                </a>
                                 <div class="dropdown-menu dropdown-menu-end py-0 m-0" aria-labelledby="profilelink">
+                                    <span class="dropdown-item disabled">{{ auth()->user()->name.' - '.auth()->user()->usertype }}</span>
                                     @if(auth()->user()->usertype == 'admin')
                                     <a class="dropdown-item" href="{{ route('business.settings') }}"><i class="icon-line-cog me-2"></i>Settings</a>
                                     <a class="dropdown-item" href="{{ route('branches.index') }}"><i class="icon-line-code me-2"></i> Branches</a>
-                                    {{-- <a class="dropdown-item" href="{{ route('sms.compose') }}"><i class="icon-line-mail me-2"></i>Compose SMS</a>
-                                    <a class="dropdown-item" href="{{ route('sms.balance') }}"><i class="icon-line-speech-bubble me-2"></i>SMS Balance</a> --}}
+                                    {{-- Other admin-related items --}}
                                     <div class="line m-0"></div>
                                     @endif
                                     <a class="dropdown-item" href="{{ route('change.password') }}"><i class="icon-line-lock me-2"></i>Change Password</a>
                                     <a class="dropdown-item" href="{{ route('logout') }}"><i class="icon-line-log-out me-2"></i>Sign Out</a>
                                 </div>
                             </div>
+                            
 
                         </div>
 
@@ -182,11 +183,11 @@ $business = App\Models\Business::where('id', auth()->user()->business_id)->first
 
     <!-- Footer Scripts -->
     <script src="/js/functions.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/js/select2.full.min.js" integrity="sha512-m7x59G4+NdYoUUKUscYq2qKkineVwmjXA/7WfXm8pukxYiFavrh9uFImpPtbmZGAnHR0rouVWWk+dgcHNurQ5g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>    
+    @yield('js')
     <script src="/toastr/toastr.min.js"></script>
     {!! Toastr::message() !!}
 
-    @yield('js')
 </body>
 
 </html>

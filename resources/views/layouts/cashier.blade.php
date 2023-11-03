@@ -7,11 +7,7 @@
             <li class="menu-item"><a class="menu-link" href="{{ route('cashier.home') }}">
                     <div>Home</div>
                 </a></li>
-            <li class="menu-item">
-                <a class="menu-link" href="{{ route('credit.index') }}">
-                    <div>Credit Sales</div>
-                </a>
-            </li>
+
             <li class="menu-item">
                 <a class="menu-link" href="{{ route('sales.all.index') }}">
                     <div>All Sales</div>
@@ -20,10 +16,6 @@
 
             <li class="menu-item"><a class="menu-link" href="{{ route('expense.index') }}">
                     <div>Expense</div>
-                </a></li>
-
-            <li class="menu-item"><a class="menu-link" href="{{ route('returns') }}">
-                    <div>Returns</div>
                 </a></li>
 
             <li class="menu-item"><a class="menu-link" href="{{ route('customers.index') }}">
@@ -37,7 +29,7 @@
             <div>Home</div>
         </a></li>
     <li
-        class="menu-item {{ $route == 'sales.index' ? 'current' : '' }}  {{ $route == 'sales.all.index' ? 'current' : '' }} {{ $route == 'credit.index' ? 'current' : '' }}">
+        class="menu-item {{ $route == 'sales.index' ? 'current' : '' }} {{ $route == 'returns.all' ? 'current' : '' }}   {{ $route == 'sales.all.index' ? 'current' : '' }} {{ $route == 'estimate.all.index' ? 'current' : '' }}">
         <a class="menu-link" href="#">
             <div>Transactions</div>
         </a>
@@ -63,7 +55,6 @@
                     <div>View Returns</div>
                 </a>
             </li>
-
         </ul>
     </li>
     <li class="menu-item {{ $route == 'expense.index' ? 'current' : '' }} "><a class="menu-link"
@@ -117,7 +108,8 @@
                 class="menu-item {{ $route == 'customers.index' ? 'current' : '' }} {{ $route == 'customers.profile' ? 'current' : '' }}">
                 <a class="menu-link" href="{{ route('customers.index') }}">
                     <div>Customers</div>
-                </a></li>
+                </a>
+            </li>
             <li class="menu-item {{ $route == 'cashier.salary_advance.index' ? 'current' : '' }}">
                 <a class="menu-link" href="{{ route('cashier.salary_advance.index') }}">
                     <div>Salary Advance</div>

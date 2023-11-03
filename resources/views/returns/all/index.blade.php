@@ -8,7 +8,7 @@
                 <div class="card">
                     <!-- Default panel contents -->
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <div class="col-2 d-none d-md-block"><span class="text-bold fs-16">All Sales</span></div>
+                        <h2 class="text-bold fs-20">All Returns</h2>
                     </div>
                     <div class="card-body">
                         <div class="table-data">
@@ -32,9 +32,9 @@
 @section('js')
 
     <script>
-         function PrintReceiptContent(return_no) {
+         function PrintReceiptContent(receipt_no) {
             data = {
-                'return_no': return_no,
+                'receipt_no': receipt_no,
             }
 
             $.ajaxSetup({
@@ -48,37 +48,40 @@
                 url: "{{ route('refresh-receipt-return') }}",
                 data: data,
                 success: function(res) {
-
                     var html = '';
                     var total = 0;
+                    var discount = 0;
+
                     $.each(res.items, function(key, item) {
-                        var calculated = 0;
-                        if(item.discount)
-                        {
-                            calculated =  item.quantity * item.price - item.discount;
-                        }else
-                        {
-                            calculated =  item.quantity * item.price;
-                        }
                         html +=
                             '<tr style="text-align: center">' +
-                            '<td style="font-size: 12px;">' + (key + 1) + '</td>' +
-                            '<td style="text-align: left"><span style="font-size: 12px;" >' + item.product.name +
-                            '</span></td>' +
+                            '<td style="text-align: left"><span style="font-size: 12px;">' + item
+                            .product.name + '</span></td>' +
                             '<td style="font-size: 12px;">' + item.quantity + '</td>' +
-                            '<td style="font-size: 12px;">' + calculated + '</td>' +
+                            '<td style="font-size: 12px;">' + item.price.toLocaleString() + '</td>' +
+                            '<td style="font-size: 12px;">' + (item.quantity * item.price)
+                            .toLocaleString() + '</td>' +
                             '</tr>';
-                        total += calculated;
-                    });
-                    html +=
-                        '<tr style="text-align: center">' +
-                        '<td></td>' +
-                        '<td colspan="2"><b>Total Amount</b></td>' +
-                        '<td><b>&#8358;' + total.toLocaleString() + '</b></td>' +
-                        '</tr>';
+                        total += item.quantity * item.price;
 
-                    html = $('#receipt_body').html(html);
-                    $('.tran_id').html('R'+res.items[0].return_no);
+                        // Parse the discount as an integer and add it to the discount variable
+                        discount += parseInt(item.discount);
+                    });
+
+                    var totalCal = total;
+
+                    $('#receipt_body').html(html);
+                    $('.tran_id').html(res.items[0].receipt_no);
+                    $('#cashier_name').html(res.items[0].staff.name);
+
+                    if (discount > 0) {
+                        $('#salesdiscount').html('₦' + discount.toLocaleString());
+                        $("#salesdiscounttr").show();
+                        totalCal = total - discount;
+                    } else {
+                        $("#salesdiscounttr").hide();
+                    }
+                    $('#total').html('₦' + totalCal.toLocaleString());
 
                     var data = document.getElementById('print').innerHTML;
 
@@ -87,7 +90,7 @@
                     myReceipt.screenX = 0;
                     myReceipt.screenY = 0;
                     myReceipt.document.write(data);
-                    myReceipt.document.title = "Print Return Certificate";
+                    myReceipt.document.title = "Print Receipt";
                     myReceipt.focus();
                     myReceipt.print();
                 },

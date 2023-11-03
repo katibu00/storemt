@@ -8,29 +8,13 @@
             <li class="menu-item"><a class="menu-link" href="{{ route('admin.home') }}">
                     <div>Home</div>
                 </a></li>
-            <li class="menu-item">
-                <a class="menu-link" href="{{ route('credit.index') }}">
-                    <div>Credit Sales</div>
-                </a>
-            </li>
+           
             <li class="menu-item">
                 <a class="menu-link" href="{{ route('sales.all.index') }}">
                     <div>All Sales</div>
                 </a>
             </li>
-            <li class="menu-item">
-                <a class="menu-link" href="{{ route('estimate.index') }}">
-                    <div>Estimate</div>
-                </a>
-            </li>
-            <li class="menu-item"><a class="menu-link" href="{{ route('returns') }}">
-                    <div>Returns</div>
-                </a></li>
-            <li class="menu-item">
-                <a class="menu-link" href="{{ route('report.index') }}">
-                    <div>Report</div>
-                </a>
-            </li>
+           
             <li class="menu-item">
                 <a class="menu-link " href="{{ route('reorder.index') }}">
                     <div>New Reorder</div>
@@ -63,10 +47,7 @@
             href="{{ route('admin.home') }}">
             <div>Home</div>
         </a></li>
-    {{-- <li class="menu-item {{ $route == 'data-sync.index' ? 'current' : '' }}"><a class="menu-link"
-            href="{{ route('data-sync.index') }}">
-            <div>Data Synch</div>
-        </a></li> --}}
+
     <li
         class="menu-item {{ $route == 'report.index' ? 'current' : '' }} {{ $route == 'report.generate' ? 'current' : '' }}">
         <a class="menu-link" href="{{ route('report.index') }}">
@@ -111,8 +92,7 @@
             <div>Inventory</div>
         </a></li>
 
-    <li
-        class="menu-item {{ $route == 'sales.index' ? 'current' : '' }}  {{ $route == 'sales.all.index' ? 'current' : '' }} {{ $route == 'credit.index' ? 'current' : '' }}">
+    <li class="menu-item {{ $route == 'sales.index' ? 'current' : '' }} {{ $route == 'returns.all' ? 'current' : '' }}   {{ $route == 'sales.all.index' ? 'current' : '' }} {{ $route == 'estimate.all.index' ? 'current' : '' }}">
         <a class="menu-link" href="#">
             <div>Transactions</div>
         </a>

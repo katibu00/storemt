@@ -78,6 +78,10 @@ class BranchesController extends Controller
             'manager_id' => $request->input('manager_id'),
         ]);
 
+        $staff = User::find($request->input('manager_id'));
+        $staff->branch_id = $branch->id;
+        $staff->update();
+
         session()->flash('success', 'Branch updated successfully');
 
         return redirect()->route('branches.index');

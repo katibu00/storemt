@@ -16,12 +16,12 @@ class ReturnsController extends Controller
     {
         $user = auth()->user();
         $data['products'] = Product::where('business_id', $user->business_id)->where('branch_id', $user->branch_id)->orderBy('name')->get();
-        $data['recents'] = Returns::select('product_id', 'return_no')->whereDate('created_at', Carbon::today())->where('staff_id', auth()->user()->id)->groupBy('return_no')->orderBy('created_at', 'desc')->take(4)->get();
+        $data['recents'] = Returns::select('product_id', 'receipt_no')->whereDate('created_at', Carbon::today())->where('staff_id', $user->id)->groupBy('receipt_no')->orderBy('created_at', 'desc')->take(4)->get();
         return view('returns.index', $data);
     }
     public function allIndex()
     {
-        $data['returns'] = Returns::select('product_id','return_no')->where('business_id',auth()->user()->business_id)->where('branch_id',auth()->user()->branch_id)->groupBy('return_no')->orderBy('created_at','desc')->paginate(10);
+        $data['returns'] = Returns::select('product_id','receipt_no')->where('business_id',auth()->user()->business_id)->where('branch_id',auth()->user()->branch_id)->groupBy('receipt_no')->orderBy('created_at','desc')->paginate(10);
         return view('returns.all.index', $data);
     }
 
@@ -29,7 +29,6 @@ class ReturnsController extends Controller
     {
 
         $total_price = 0; 
-        // dd($request->all());
 
         $productCount = count($request->product_id);
         if ($productCount != null) {
@@ -72,7 +71,7 @@ class ReturnsController extends Controller
         if ($last == null) {
             $last_record = '1/0';
         } else {
-            $last_record = $last->return_no;
+            $last_record = $last->receipt_no;
         }
         $exploded = explode("/", $last_record);
         $number = $exploded[1] + 1;
@@ -86,7 +85,7 @@ class ReturnsController extends Controller
                 $data = new Returns();
                 $data->business_id = $user->business_id;
                 $data->branch_id = $user->branch_id;
-                $data->return_no = $stored;
+                $data->receipt_no = $stored;
                 $data->product_id = $request->product_id[$i];
                 $data->price = $request->price[$i];
                 $data->quantity = $request->quantity[$i];
@@ -118,12 +117,12 @@ class ReturnsController extends Controller
 
     public function refresh(Request $request)
     {
-        $data['recents'] = Returns::select('product_id','return_no')->where('business_id', auth()->user()->business_id)->whereDate('created_at', Carbon::today())->where('staff_id',auth()->user()->id)->groupBy('return_no')->orderBy('created_at','desc')->take(4)->get();
+        $data['recents'] = Returns::select('product_id','receipt_no')->where('business_id', auth()->user()->business_id)->where('branch_id', auth()->user()->branch_id)->whereDate('created_at', Carbon::today())->where('staff_id',auth()->user()->id)->groupBy('receipt_no')->orderBy('created_at','desc')->take(4)->get();
         return view('returns.recent_sales_table', $data)->render();
     }
     public function loadReceipt(Request $request)
     {
-        $items = Returns::with('product')->where('business_id', auth()->user()->business_id)->where('return_no', $request->return_no)->get();
+        $items = Returns::with('product','staff')->where('business_id', auth()->user()->business_id)->where('branch_id', auth()->user()->branch_id)->where('receipt_no', $request->receipt_no)->get();
         return response()->json([
             'status' => 200,
             'items' => $items,

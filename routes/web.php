@@ -21,17 +21,6 @@ use App\Http\Controllers\SuppliersController;
 use App\Http\Controllers\UsersController;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
- */
-
 Route::get('/', function () {
     if (auth()->check()) {
         if (auth()->user()->usertype == 'admin') {
@@ -41,7 +30,6 @@ Route::get('/', function () {
             return redirect()->route('cashier.home');
         }
     };
-    // return view('ecom.index');
     return view('auth.login');
 });
 
@@ -54,7 +42,6 @@ Route::get('/home', function () {
             return redirect()->route('cashier.home');
         }
     };
-    // return view('ecom.index');
     return view('auth.login');
 })->name('home');
 
@@ -82,15 +69,12 @@ Route::group(['middleware' => ['auth', 'super']], function () {
     Route::put('/businesses/{business}', 'BusinessController@update')->name('business.update');
     Route::delete('/businesses/{business}', 'BusinessController@destroy')->name('business.destroy');
 
-
     Route::get('/login-logs', [AuthController::class, 'logs'])->name('login-logs');
-
 });
 
 Route::group(['prefix' => 'business', 'middleware' => ['auth', 'admin']], function () {
     Route::get('/settings', [ClientController::class, 'settingsIndex'])->name('business.settings');
     Route::post('/settings', [ClientController::class, 'settingsSave']);
-   
 });
 
 Route::group(['prefix' => 'products', 'middleware' => ['auth', 'admin']], function () {
@@ -136,7 +120,6 @@ Route::group(['prefix' => 'purchases', 'middleware' => ['auth', 'admin']], funct
 
     Route::post('/fetch-branch-stocks', [PurchasesController::class, 'fetchStocks'])->name('fetch-branch-stocks');
     Route::post('/fetch-purchases', [PurchasesController::class, 'fetchPurchases'])->name('fetch-purchases');
-
 });
 
 Route::group(['prefix' => 'sales', 'middleware' => ['auth', 'staff']], function () {
@@ -156,7 +139,6 @@ Route::group(['prefix' => 'sales', 'middleware' => ['auth', 'staff']], function 
     Route::post('/all/search', [SalesController::class, 'allSearch'])->name('sales.all.search');
     Route::post('/all/sort', [SalesController::class, 'filterSales'])->name('sales.all.sort');
 
-
     Route::post('/awaiting_pickup', [SalesController::class, 'markAwaitingPickup'])->name('sales.awaiting_pickup');
     Route::post('/deliver', [SalesController::class, 'markDeliver'])->name('sales.deliver');
 });
@@ -170,6 +152,9 @@ Route::group(['prefix' => 'estimate', 'middleware' => ['auth', 'staff']], functi
     Route::get('/all/index', [EstimateController::class, 'allIndex'])->name('estimate.all.index');
     Route::post('/all/store', [EstimateController::class, 'allStore'])->name('estimate.all.store');
 
+    Route::post('/all/search', [EstimateController::class, 'allSearch'])->name('estimate.all.search');
+    Route::post('/all/sort', [EstimateController::class, 'filterSales'])->name('estimate.all.sort');
+
 });
 
 Route::group(['prefix' => 'users', 'middleware' => ['auth', 'admin']], function () {
@@ -179,7 +164,6 @@ Route::group(['prefix' => 'users', 'middleware' => ['auth', 'admin']], function 
     Route::get('/edit/{id}', [UsersController::class, 'edit'])->name('users.edit');
     Route::post('/update/{id}', [UsersController::class, 'update'])->name('users.update');
     Route::post('/search', [UsersController::class, 'search'])->name('users.search');
-
 });
 
 Route::group(['prefix' => 'sms', 'middleware' => ['auth', 'staff']], function () {
@@ -214,7 +198,6 @@ Route::group(['prefix' => 'branches', 'middleware' => ['auth', 'admin']], functi
     Route::put('branches/{branch}', [BranchesController::class, 'update'])->name('branches.update');
 
     Route::delete('branches/{branch}', [BranchesController::class, 'destroy'])->name('branches.destroy');
-
 });
 
 Route::group(['prefix' => 'returns', 'middleware' => ['auth', 'staff']], function () {
@@ -224,6 +207,7 @@ Route::group(['prefix' => 'returns', 'middleware' => ['auth', 'staff']], functio
     Route::post('/refresh-receipt-return', [ReturnsController::class, 'loadReceipt'])->name('refresh-receipt-return');
     Route::get('/all/index', [ReturnsController::class, 'allIndex'])->name('returns.all');
 });
+
 Route::group(['prefix' => 'report', 'middleware' => ['auth', 'admin']], function () {
     Route::get('/index', [ReportController::class, 'index'])->name('report.index');
     Route::post('/generate', [ReportController::class, 'generate'])->name('report.generate');
@@ -245,7 +229,6 @@ Route::group(['prefix' => 'customers', 'middleware' => ['auth', 'staff']], funct
 
     Route::post('/save_pre_balance_payment', [UsersController::class, 'savePreBalance'])->name('customers.save.pre_balance');
 
-
     Route::get('/edit/{id}', [UsersController::class, 'editCustomer'])->name('customers.edit');
 
     Route::post('/update/{id}', [UsersController::class, 'updateCustomer'])->name('customers.update');
@@ -263,10 +246,10 @@ Route::group(['prefix' => 'customers', 'middleware' => ['auth', 'staff']], funct
     Route::post('/admin/salary_advance/delete', [SalaryAdvanceController::class, 'delete'])->name('cashier.salary_advance.delete');
 
 });
+
 Route::get('/post-data', [ApiController::class, 'store'])->name('post-data');
 
 Route::get('/fetch_stocks', [ReportController::class, 'fetchStocks'])->name('fetch_stocks');
-
 
 Route::get('/get-product-suggestions',[SalesController::class, 'getProductSuggestions']);
 Route::get('/fetch-credit-balance', [SalesController::class, 'fetchBalanceOrDeposit']);
