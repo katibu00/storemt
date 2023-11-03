@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LoginLog;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Hash;
-use App\Models\LoginLog;
-
+use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
@@ -20,22 +20,21 @@ class AuthController extends Controller
         return view('auth.change_password');
     }
 
-
     public function login(Request $request)
     {
         $request->validate([
             'email_or_phone' => 'required',
             'password' => 'required',
         ]);
-    
+
         $credentials = $this->getCredentials($request);
         $rememberMe = $request->filled('rememberMe');
-    
+
         try {
             if (Auth::attempt($credentials, $rememberMe)) {
                 // Create a login log entry
                 $this->createLoginLog($request->ip(), auth()->user());
-    
+
                 if ($request->ajax()) {
                     return response()->json(['success' => true, 'redirect_url' => $this->getRedirectUrl()]);
                 } else {
@@ -54,7 +53,7 @@ class AuthController extends Controller
             }
         }
     }
-    
+
     private function createLoginLog($ipAddress, $user)
     {
         // Create a new login log entry in the database
@@ -65,8 +64,6 @@ class AuthController extends Controller
             'login_at' => now(),
         ]);
     }
-    
-
 
     protected function getCredentials(Request $request)
     {
@@ -101,15 +98,11 @@ class AuthController extends Controller
         return route($this->getRedirectRoute());
     }
 
-    public function logout(){
+    public function logout()
+    {
         auth()->logout();
         return redirect()->route('login');
     }
-
-    // public function changePasswordStore(){
-       
-    // }
-
 
     public function changePasswordStore(Request $request)
     {
@@ -128,5 +121,19 @@ class AuthController extends Controller
         $user->save();
 
         return redirect()->back()->with('success', 'Password changed successfully.');
+    }
+
+    public function loginLogs()
+    {
+        $loginLogs = LoginLog::with(['business', 'user'])
+            ->orderBy('login_at', 'desc')
+            ->paginate(15);
+
+        $loginLogs->transform(function ($log) {
+            $log->login_at = Carbon::parse($log->login_at);
+            return $log;
+        });
+
+        return view('auth.logs', compact('loginLogs'));
     }
 }
