@@ -4,6 +4,26 @@
     <section id="content">
         <div class="content-wrap">
             <div class="container">
+
+                @if (session('success'))
+                    <div class="alert alert-success">
+                        {{ session('success') }}
+                    </div>
+                @endif
+                @if (session('error'))
+                    <div class="alert alert-danger">
+                        {{ session('error') }}
+                    </div>
+                @endif
+                @if ($errors->any())
+                    <div class="alert alert-danger">
+                        <ul>
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
                 <div class="card">
 
                     <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
@@ -25,29 +45,6 @@
 
                     <div class="card-body">
 
-
-                        @if ($errors->any())
-                            <div class="alert alert-danger">
-                                <ul>
-                                    @foreach ($errors->all() as $error)
-                                        <li>{{ $error }}</li>
-                                    @endforeach
-                                </ul>
-                            </div>
-                        @endif
-
-                        <!-- Display success message if it exists -->
-                        @if (session('success'))
-                            <div class="alert alert-success">
-                                {{ session('success') }}
-                            </div>
-                        @endif
-                        @if (session('error'))
-                            <div class="alert alert-danger">
-                                {{ session('error') }}
-                            </div>
-                        @endif
-
                         @include('users.customers.table')
 
                     </div>
@@ -57,49 +54,37 @@
         </div>
     </section><!-- #content end -->
 
-    <!-- Large Modal -->
     <div class="modal fade addModal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title" id="myModalLabel">Add New Customer</h4>
+                    <h4 class="modal-title" id="myModalLabel">Add New Customer(s)</h4>
                     <button type="button" class="btn-close btn-sm" data-bs-dismiss="modal" aria-hidden="true"></button>
                 </div>
                 <form action="{{ route('customers.store') }}" method="POST">
                     @csrf
                     <div class="modal-body">
-
-
-                        <div class="form-group">
-                            <label for="name" class="col-form-label">Customer Name:</label>
-                            <input type="text" class="form-control" id="name" name="name" required>
-                            @error('name')
-                                <p class="text-danger">{{ $message }}</p>
-                            @enderror
+                        <div id="user-list">
+                            <!-- Initial row -->
+                            <div class="row user-row">
+                                <div class="form-group col-md-4">
+                                    <input type="text" class="form-control" name="name[]" placeholder="Customer Name *" required>
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <input type="tel" class="form-control" name="phone[]" placeholder="Phone Number *" required>
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <input type="number" class="form-control" name="pre_balance[]"
+                                        placeholder="Previous Credit Balance">
+                                </div>
+                                <div class="form-group col-md-1">
+                                    <button type="button" class="btn btn-danger remove-user" disabled>X</button>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="form-group">
-                            <label for="email" class="col-form-label">Phone Number:</label>
-                            <input type="tel" class="form-control" id="phone" name="phone" required>
-                            @error('phone')
-                                <p class="text-danger">{{ $message }}</p>
-                            @enderror
-                        </div>
-                        <div class="form-group">
-                            <label for="pre_balance" class="col-form-label">Previous Credit Balance:</label>
-                            <input type="number" class="form-control" id="pre_balance" name="pre_balance" required>
-                            @error('pre_balance')
-                                <p class="text-danger">{{ $message }}</p>
-                            @enderror
-                        </div>
-                        {{-- <div class="form-group">
-                            <label for="deposit" class="col-form-label">Deposit Balance:</label>
-                            <input type="number" class="form-control" id="deposit" name="deposit" required>
-                            @error('deposit')
-                                <p class="text-danger">{{ $message }}</p>
-                            @enderror
-                        </div> --}}
-
+                        <!-- Button to add a new user row -->
+                        <button type="button" class="btn btn-secondary" id="add-user">+ Add New Row</button>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -110,56 +95,45 @@
         </div>
     </div>
 
-    <div class="modal fade depositModal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title" id="myModalLabel">Add New Deposit</h4>
-                    <button type="button" class="btn-close btn-sm" data-bs-dismiss="modal" aria-hidden="true"></button>
-                </div>
-                <form action="{{ route('customers.save.deposit') }}" method="POST">
-                    @csrf
-                    <div class="modal-body">
-
-                        <div class="row">
-                            <div class="form-group col-md-6">
-                                <label for="" class="col-form-label">Payment Amount:</label>
-                                <input type="number" step="any" class="form-control" placeholder="Amount"
-                                    name="amount">
-                            </div>
-                            <div class="form-group col-md-6">
-                                <label for="" class="col-form-label">Payment Method:</label>
-                                <select class="form-select" name="payment_method" required>
-                                    <option value=""></option>
-                                    <option value="cash">Cash</option>
-                                    <option value="transfer">Transfer</option>
-                                    <option value="pos">POS</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <input type="hidden" value="{{ @$user->id }}" name="customer_id">
-
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary ml-2">Add Deposit</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-
-
-    
-
-
-
 @endsection
 
 @section('js')
+
+
+    <script>
+        // Function to add a new user row
+        function addUserRow() {
+            const userList = document.getElementById('user-list');
+            const userRow = document.createElement('div');
+            userRow.classList.add('row', 'user-row');
+            userRow.innerHTML = `
+            <div class="form-group col-md-4">
+                <input type="text" class="form-control" name="name[]" placeholder="Customer Name *" required>
+            </div>
+            <div class="form-group col-md-3">
+                <input type="tel" class="form-control" name="phone[]" placeholder="Phone Number *" required>
+            </div>
+            <div class="form-group col-md-4">
+                <input type="number" class="form-control" name="pre_balance[]" placeholder="Previous Credit Balance">
+            </div>
+            <div class="form-group col-md-1">
+                <button type="button" class="btn btn-danger remove-user">X</button>
+            </div>
+        `;
+            userList.appendChild(userRow);
+
+            // Add an event listener to the "Remove" button
+            const removeButton = userRow.querySelector('.remove-user');
+            removeButton.addEventListener('click', () => {
+                userList.removeChild(userRow);
+            });
+        }
+
+        // Event listener for the "Add User" button
+        document.getElementById('add-user').addEventListener('click', addUserRow);
+    </script>
+
+
 
     <script>
         function handleSearch() {
@@ -248,7 +222,7 @@
                                     Command: toastr["success"](
                                         "User deleted Successfully."
                                     );
-                                   
+
                                     window.location.replace('{{ route('customers.index') }}');
 
                                 }
@@ -257,7 +231,7 @@
                                     Command: toastr["error"](
                                         "Error Occured"
                                     );
-                                   
+
                                 }
 
 

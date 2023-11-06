@@ -22,8 +22,8 @@ class UsersController extends Controller
         $businessId = auth()->user()->business_id;
 
         $data['users'] = User::where('business_id', $businessId)
-                                ->whereNotIn('usertype', ['customer', 'supplier'])
-                                ->get();
+            ->whereNotIn('usertype', ['customer', 'supplier'])
+            ->get();
         $data['branches'] = Branch::where('business_id', $businessId)->get();
         return view('users.index', $data);
     }
@@ -33,49 +33,58 @@ class UsersController extends Controller
         $branchId = auth()->user()->branch_id;
         $businessId = auth()->user()->business_id;
 
-        if(auth()->user()->usertype == 'cashier')
-        {
-            if(auth()->user()->business->manage_customers == false)
-            {
+        if (auth()->user()->usertype == 'cashier') {
+            if (auth()->user()->business->manage_customers == false) {
                 Toastr::error('You do not have persmission', 'Denied');
                 return redirect()->route('cashier.home');
             }
         }
 
         $data['customers'] = User::where('usertype', 'customer')
-                            ->where('branch_id', $branchId)
-                            ->where('business_id', $businessId)
-                            ->orderBy('name')->get();
+            ->where('branch_id', $branchId)
+            ->where('business_id', $businessId)
+            ->orderBy('name')->get();
         return view('users.customers.index', $data);
     }
 
     public function customerStore(Request $request)
     {
         $request->validate([
-            'name' => 'required',
-            'phone' => 'required|unique:users,phone',
+            'name.*' => 'required|string',
+            'phone.*' => 'required|unique:users,phone',
+            'pre_balance.*' => 'nullable|numeric',
         ]);
-        $user = new User();
-        $user->business_id = auth()->user()->business_id;
-        $user->branch_id = auth()->user()->branch_id;
-        $user->name = $request->name;
-        $user->phone = $request->phone;
-        $user->balance = 0;
-        $user->pre_balance = $request->pre_balance;
-        $user->usertype = 'customer';
-        $user->password = Hash::make(12345678);
-        $user->save();
-        Toastr::success('Customer has been created sucessfully', 'Done');
-        return redirect()->route('customers.index');
+
+        $businessId = auth()->user()->business_id;
+        $branchId = auth()->user()->branch_id;
+
+        $customers = $request->input('name');
+
+        foreach ($customers as $key => $customerName) {
+            $customer = new User();
+            $customer->business_id = $businessId;
+            $customer->branch_id = $branchId;
+            $customer->name = $customerName;
+            $customer->phone = $request->input('phone')[$key];
+            $customer->balance = 0;
+            $customer->pre_balance = $request->input('pre_balance')[$key] ?? 0;
+            $customer->usertype = 'customer';
+            $customer->password = Hash::make(12345678);
+            $customer->save();
+        }
+
+        $message = 'Customer(s) have been created successfully';
+
+        Toastr::success($message);
+
+        return redirect()->route('customers.index')->with('success', $message);
     }
 
     public function store(Request $request)
     {
-        if(auth()->user()->business->has_branches == 1)
-        {
+        if (auth()->user()->business->has_branches == 1) {
             $branch_id = $request->branch_id;
-        }else
-        {
+        } else {
             $branch_id = auth()->user()->branch_id;
         }
         $user = new User();
@@ -113,7 +122,7 @@ class UsersController extends Controller
 
     public function customerProfile($id)
     {
-        $data['user'] = User::select('id', 'name', 'balance','deposit','pre_balance')->where('id', $id)->first();
+        $data['user'] = User::select('id', 'name', 'balance', 'deposit', 'pre_balance')->where('id', $id)->first();
         $data['dates'] = Sale::select('product_id', 'receipt_no', 'created_at', 'status')
             ->where('business_id', auth()->user()->business_id)
             ->where('branch_id', auth()->user()->branch_id)
@@ -152,7 +161,7 @@ class UsersController extends Controller
         $user->phone = $request->phone;
         $user->pre_balance = $request->pre_balance;
         $user->deposit = $request->deposit;
-      
+
         $user->update();
         Toastr::success('Customer has been updated sucessfully', 'Done');
         return redirect()->route('customers.index');
@@ -160,11 +169,9 @@ class UsersController extends Controller
 
     public function update(Request $request, $id)
     {
-        if(auth()->user()->business->has_branches == 1)
-        {
+        if (auth()->user()->business->has_branches == 1) {
             $branch_id = $request->branch_id;
-        }else
-        {
+        } else {
             $branch_id = auth()->user()->branch_id;
         }
 
@@ -186,10 +193,8 @@ class UsersController extends Controller
         $total_amount_paid = 0;
         $businessId = auth()->user()->business_id;
         $branchId = auth()->user()->branch_id;
-        
 
-        if($request->receipt_no == null)
-        {
+        if ($request->receipt_no == null) {
             Toastr::error("No Transaction selected");
             return redirect()->back();
         }
@@ -199,16 +204,13 @@ class UsersController extends Controller
             for ($i = 0; $i < $rowCount; $i++) {
 
                 if ($request->payment_option[$i] == "Full Payment") {
-                  
-                    if ($request->payment_method == 'deposit') 
-                    {
-                        if($customer->deposit < $request->full_payment_payable[$i]) 
-                        {
+
+                    if ($request->payment_method == 'deposit') {
+                        if ($customer->deposit < $request->full_payment_payable[$i]) {
                             Toastr::error("Customer has no enough deposit balance");
                             return redirect()->back();
                         }
                     }
-                  
 
                     $receiptNo = $request->receipt_no[$i];
                     $sales = DB::table('sales')
@@ -226,8 +228,7 @@ class UsersController extends Controller
                             ->where('business_id', $businessId)
                             ->where('branch_id', $branchId)
                             ->update(['status' => 'paid']);
-                         
-                   
+
                         if ($request->payment_method == 'deposit') {
                             $customer->deposit -= $request->full_payment_payable[$i];
                             $customer->balance -= $request->full_payment_payable[$i];
@@ -245,7 +246,7 @@ class UsersController extends Controller
                             ->where('business_id', $businessId)
                             ->where('branch_id', $branchId)
                             ->update(['status' => 'paid']);
-                       
+
                         array_push($receipt_nos, $request->receipt_no[$i]);
                         $total_amount_paid += $request->full_payment_payable[$i];
 
@@ -262,10 +263,8 @@ class UsersController extends Controller
                 }
                 if ($request->payment_option[$i] == "Partial Payment") {
 
-                    if ($request->payment_method == 'deposit') 
-                    {
-                        if($customer->deposit < $request->partial_amount[$i]) 
-                        {
+                    if ($request->payment_method == 'deposit') {
+                        if ($customer->deposit < $request->partial_amount[$i]) {
                             Toastr::error("Customer has no enough deposit balance");
                             return redirect()->back();
                         }
@@ -316,7 +315,7 @@ class UsersController extends Controller
                             $customer->balance -= $request->partial_amount[$i];
                             $customer->update();
                         } else {
-                            $customer->balance -=  $request->partial_amount[$i];
+                            $customer->balance -= $request->partial_amount[$i];
                             $customer->update();
                         }
 
@@ -380,15 +379,13 @@ class UsersController extends Controller
     {
         $user = User::find($request->customer_id);
 
-        if($user->pre_balance < 1 )
-        {
+        if ($user->pre_balance < 1) {
             Toastr::error('User Previous Balance Record is less than 1', 'Warning');
-            return redirect()->back(); 
+            return redirect()->back();
         }
-        if( $request->paymentAmount > $user->pre_balance)
-        {
+        if ($request->paymentAmount > $user->pre_balance) {
             Toastr::error('Previous Balance Payment cannot exceed the user balance', 'Warning');
-            return redirect()->back(); 
+            return redirect()->back();
         }
         $record = new Payment();
         $record->business_id = auth()->user()->business_id;
@@ -401,7 +398,6 @@ class UsersController extends Controller
         $record->payment_type = 'pre_bal';
         $record->save();
 
-        
         $user->pre_balance -= $request->paymentAmount;
         $user->save();
 
@@ -413,8 +409,6 @@ class UsersController extends Controller
     public function updateDeposit(Request $request)
     {
         $deposit = Payment::findOrFail($request->depositId);
-
-        
 
         $validatedData = $request->validate([
             'payment_amount' => 'required|numeric',
@@ -432,7 +426,6 @@ class UsersController extends Controller
 
         return response()->json(['message' => 'Deposit updated successfully']);
     }
-
 
     public function loadReceipt(Request $request)
     {
@@ -464,10 +457,10 @@ class UsersController extends Controller
         $branchId = auth()->user()->branch_id;
 
         $id = $request->input('id');
-        $sale = Sale::where('receipt_no',$id)
-        ->where('business_id', $businessId)
-        ->where('branch_id', $branchId)
-        ->first();
+        $sale = Sale::where('receipt_no', $id)
+            ->where('business_id', $businessId)
+            ->where('branch_id', $branchId)
+            ->first();
 
         $data['sales'] = Sale::select('id', 'product_id', 'price', 'quantity', 'discount', 'status', 'payment_amount', 'customer_id', 'returned_qty')
             ->where('receipt_no', $id)
@@ -480,50 +473,47 @@ class UsersController extends Controller
 
     }
 
-
     public function returnStore(Request $request)
     {
-        $fistRow = Sale::select('receipt_no','customer_id')->where('id', $request->sale_id[0])->first();
+        $fistRow = Sale::select('receipt_no', 'customer_id')->where('id', $request->sale_id[0])->first();
 
         $businessId = auth()->user()->business_id;
         $branchId = auth()->user()->branch_id;
 
         $sales = Sale::where('receipt_no', $fistRow->receipt_no)
-        ->where('customer_id', $fistRow->customer_id)
-        ->where('business_id', $businessId)
-        ->where('branch_id', $branchId)
-        ->get();
-         
-        $net_amount = 0;
-       
-        foreach($sales as $sale)
-       {
-        $net_amount += ($sale->quantity - $sale->returned_qty) * $sale->price - $sale->discount;
-       
-       }
-       $remaining_balance = $net_amount - ($sales[0]->payment_amount ?? 0);
+            ->where('customer_id', $fistRow->customer_id)
+            ->where('business_id', $businessId)
+            ->where('branch_id', $branchId)
+            ->get();
 
-       $returned_amount = 0;
-       $saleIdCount = count($request->sale_id);
-       if ($saleIdCount != null) {
-           for ($i = 0; $i < $saleIdCount; $i++) {
-                $sale = Sale::select('returned_qty','quantity','price','discount')->where('id',$request->sale_id[$i])->first();
+        $net_amount = 0;
+
+        foreach ($sales as $sale) {
+            $net_amount += ($sale->quantity - $sale->returned_qty) * $sale->price - $sale->discount;
+
+        }
+        $remaining_balance = $net_amount - ($sales[0]->payment_amount ?? 0);
+
+        $returned_amount = 0;
+        $saleIdCount = count($request->sale_id);
+        if ($saleIdCount != null) {
+            for ($i = 0; $i < $saleIdCount; $i++) {
+                $sale = Sale::select('returned_qty', 'quantity', 'price', 'discount')->where('id', $request->sale_id[$i])->first();
                 $returned_amount += ($sale->price * $sale->quantity - $sale->discount) * $sale->returned_qty;
             }
         }
-      
-      if($returned_amount > $remaining_balance)
-      {
-        Toastr::error('Returned Amount Cannot Exceed Remaining Balance');
-        return redirect()->back();
 
-      }
+        if ($returned_amount > $remaining_balance) {
+            Toastr::error('Returned Amount Cannot Exceed Remaining Balance');
+            return redirect()->back();
+
+        }
 
         $productCount = count($request->sale_id);
         if ($productCount != null) {
             for ($i = 0; $i < $productCount; $i++) {
 
-                $sale = Sale::select('id','returned_qty','quantity')->where('id',$request->sale_id[$i])->first();
+                $sale = Sale::select('id', 'returned_qty', 'quantity')->where('id', $request->sale_id[$i])->first();
 
                 if ($request->returned_qty[$i] != '') {
 
