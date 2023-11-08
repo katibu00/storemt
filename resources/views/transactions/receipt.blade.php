@@ -74,6 +74,7 @@ $user = auth()->user();
         </div>
         <div style="font-size: 12px; margin-top: 10px;">Ref ID: <span class="tran_id"></span></div>
         <div style="font-size: 13px; margin-top: 5px;margin-bottom: 10px;">Cashier: <span id="cashier_name"></span></div> 
+        <div style="font-size: 13px; margin-top: 5px;margin-bottom: 10px;">Customer: <span id="customer_name"></span></div> 
 
     <table>
         <thead>

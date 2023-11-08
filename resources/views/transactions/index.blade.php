@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('PageTitle', 'Record a Sale')
+@section('PageTitle', 'Record Transactions')
 
 @section('css')
     <style>
@@ -99,6 +99,20 @@
     </style>
 @endsection
 
+@php
+
+    function isMobileDevice()
+    {
+        $userAgent = $_SERVER['HTTP_USER_AGENT'];
+        $mobileKeywords = ['Mobile', 'Android', 'iPhone', 'iPad', 'Windows Phone'];
+        foreach ($mobileKeywords as $keyword) {
+            if (stripos($userAgent, $keyword) !== false) {
+                return true;
+            }
+        }
+        return false;
+    }
+@endphp
 @section('content')
     <section id="content">
         <div class="content-wrap">
@@ -143,10 +157,16 @@
                                 </div>
 
                             </div>
-                            @include('transactions.recent_transactions_table')
+                            @if(!isMobileDevice())
+                            <div class="card recent-table">
+                                <div class="card-body">
+                                    @include('transactions.recent_transactions_table')
+                                </div>
+                            </div>
+                            @endif
                         </div>
                         <div class="col-md-4 col-12">
-                            <div class="card">
+                            <div class="card mb-3">
                                 <div class="card-body">
                                     <div class="total-amount mb-2">
                                         <p id="totalAmount" class="font-weight-bold">₦0</p>
@@ -157,18 +177,16 @@
                                             <tr>
                                                 <td>
                                                     <div class="row">
-                                                        <div class="col-md-6">
-                                                            <div class="form-group">
-                                                                <label for="customer">Customer Name</label>
-                                                                <select class="form-control select2" name="customer"
-                                                                    id="customer">
-                                                                    <option value="0">Walk-in Customer</option>
-                                                                    @foreach ($customers as $customer)
-                                                                        <option value="{{ $customer->id }}">
-                                                                            {{ $customer->name }}</option>
-                                                                    @endforeach
-                                                                </select>
-                                                            </div>
+                                                        <div class="col-md-6 mb-3">
+                                                            <label for="customer">Customer</label>
+                                                            <select class="form-control select2" name="customer"
+                                                                id="customer">
+                                                                <option value="0">Walk-in Customer</option>
+                                                                @foreach ($customers as $customer)
+                                                                    <option value="{{ $customer->id }}">
+                                                                        {{ $customer->name }}</option>
+                                                                @endforeach
+                                                            </select>
                                                         </div>
                                                         <div class="col-md-6">
                                                             <label for="note">Note</label>
@@ -257,13 +275,21 @@
                                             <span id="balance" class="font-weight-bold"></span>
                                         </div>
                                         <button type="submit" id="submitBtn"
-                                            class="btn btn-primary btn-lg btn-block mt-2">Record Sale</button>
+                                            class="btn btn-primary btn-lg btn-block mt-2">Record Transaction</button>
                                     </div>
 
 
                                 </div>
                             </div>
+                            @if(isMobileDevice())
+                            <div class="card recent-table">
+                                <div class="card-body">
+                                    @include('transactions.recent_transactions_table')
+                                </div>
+                            </div>
+                            @endif
                         </div>
+                        
                     </div>
                 </form>
                 <div class="modal">
@@ -575,7 +601,6 @@
                             '</tr>';
                         total += item.quantity * item.price;
 
-                        // Parse the discount as an integer and add it to the discount variable
                         discount += parseInt(item.discount);
                     });
 
@@ -584,6 +609,7 @@
                     $('#receipt_body').html(html);
                     $('.tran_id').html(res.items[0].receipt_no);
                     $('#cashier_name').html(res.items[0].staff.name);
+                    $('#customer_name').html(res.customer_name);
 
                     if (discount > 0) {
                         $('#salesdiscount').html('₦' + discount.toLocaleString());

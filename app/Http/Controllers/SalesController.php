@@ -354,7 +354,7 @@ class SalesController extends Controller
     public function fetchBalanceOrDeposit(Request $request)
     {
         $userId = $request->input('user_id');
-        $paymentMethod = $request->input('payment_method'); // Get the selected payment method
+        $paymentMethod = $request->input('payment_method');
 
         $user = User::find($userId);
 
@@ -362,12 +362,12 @@ class SalesController extends Controller
             return response()->json(['error' => 'User not found'], 404);
         }
 
-        $balanceOrDeposit = 0; // Initialize the variable to store the balance or deposit
+        $balanceOrDeposit = 0;
 
         if ($paymentMethod === 'credit') {
-            $balanceOrDeposit = $user->balance; // Fetch the user's balance
+            $balanceOrDeposit = $user->balance;
         } elseif ($paymentMethod === 'deposit') {
-            $balanceOrDeposit = $user->deposit; // Fetch the user's deposit
+            $balanceOrDeposit = $user->deposit;
         }
 
         return response()->json(['balance_or_deposit' => $balanceOrDeposit], 200);
@@ -419,7 +419,6 @@ class SalesController extends Controller
                 $totalAmount += ($row->price * $row->quantity) - $row->discount;
             }
 
-            // Fetch the customer information for this transaction
             $customer = null;
             if ($transaction->type == 'Sales') {
                 $sale = DB::table('sales')->where('business_id',$user->business_id)->where('branch_id',$user->branch_id)->where('receipt_no', $transaction->transaction_no)->first();
@@ -468,17 +467,24 @@ class SalesController extends Controller
                 ->where('branch_id',$user->branch_id)
                 ->get();
         }
-        if(!$transactionType)
+      
+
+        $customer_name = '';
+
+        $customer_id = $items[0]->customer_id;
+        if($customer_id == null || $customer_id == 0)
         {
-            $items = Sale::with('product')
-                ->where('receipt_no', $request->receipt_no)
-                ->where('business_id',$user->business_id)
-                ->where('branch_id',$user->branch_id)
-                ->get();
+            $customer_name = 'Walk-in Customer';
+        }else
+        {
+            $customer = User::select('name')->where('id',$customer_id)->first();
+            $customer_name = $customer->name;
         }
+      
         return response()->json([
             'status' => 200,
             'items' => $items,
+            'customer_name' => $customer_name,
         ]);
 
     }
@@ -495,7 +501,6 @@ class SalesController extends Controller
     {
         $query = $request->input('query');
 
-        // Perform the search query on the Sale model
         $data['sales'] = Sale::select('product_id', 'receipt_no')
             ->where('branch_id', auth()->user()->branch_id)
             ->where('business_id', auth()->user()->business_id)
@@ -504,9 +509,6 @@ class SalesController extends Controller
             ->orderBy('created_at', 'desc')
             ->take(100)
             ->get();
-
-        // // Return the search results as JSON
-        // return response()->json($sales);
 
         return view('sales.all_table', $data)->render();
 
