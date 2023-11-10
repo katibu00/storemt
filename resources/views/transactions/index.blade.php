@@ -258,14 +258,14 @@
                                                 <span style="font-weight: bold;">Previous Balance:</span>
                                                 <span id="previousBalance" style="margin-left: 10px;">0</span>
                                             </p>
-                                            <p style="line-height: 1.5;">
+                                            {{-- <p style="line-height: 1.5;">
                                                 <span style="font-weight: bold;">New Balance:</span>
                                                 <span id="newBalance" style="margin-left: 27px;">0</span>
-                                            </p>
+                                            </p> --}}
                                         </div>
 
                                         <div id="paidAmountField" style="padding: 0; margin: 0;">
-                                            Paid Amount
+                                            <span id="paid_amount_span">Paid Amount</span>
                                             <input type="number" name="paid_amount" id="paid_amount"
                                                 class="form-control mb-2">
                                         </div>
@@ -328,13 +328,13 @@
                 paymentMethodSection.hide();
                 paidAmountField.hide();
                 $("#changeField").hide();
-
+                $('#balanceContainer').hide();
                 paymentMethodInputs.removeAttr("required");
             } else if (selectedTransactionType === "return") {
                 paymentMethodSection.show();
                 $("#changeField").hide();
                 paidAmountField.hide();
-
+                $('#balanceContainer').hide();
                 paymentMethodInputs.attr("required", true);
             } else {
                 paymentMethodSection.show();
@@ -358,6 +358,7 @@
                         $('input[name="payment_method"]').prop('checked', false);
                         return;
                     }
+                    
                     $.ajax({
                         url: '/fetch-credit-balance',
                         method: 'GET',
@@ -378,6 +379,10 @@
                                         .replace(',', ''));
                                 $('#newBalanceLabel').text('New Credit Balance:');
                                 $('#newBalance').text(newCreditBalance.toLocaleString());
+
+                                $("#paid_amount_span").text('Partial Cash Amount Paid (if any)');
+                                $("#paidAmountField").show();
+
                             } else if (selectedPaymentMethod === 'deposit') {
 
                                 $('#previousBalanceLabel').text('Previous Deposit Balance:');
@@ -398,7 +403,14 @@
                 } else {
 
                     $('#balanceContainer').hide();
+                    $("#paid_amount_span").text('Amount Paid');
                 }
+                if(selectedPaymentMethod === 'cash'){
+                        $("#paidAmountField").show();
+                    }else{
+                        $("#paidAmountField").hide();
+                 }
+               
             });
         });
     </script>
@@ -701,7 +713,7 @@
                             toastr.success(response.message, 'Success');
                             updateTable();
                             $('#productTable').empty();
-                            $('#customer').val('0');
+                            $('#customer').val('0').change();
                             $('#balanceContainer').hide();
                             $('#totalAmount').text('₦0');
                             $('input[name="payment_method"]').prop('checked', false);
