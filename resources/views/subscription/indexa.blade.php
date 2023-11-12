@@ -38,6 +38,18 @@
                                     {{-- Display subscription details for active subscribers --}}
                                     <h4 class="mb-4">Current Plan: {{ ucfirst($business->subscriptionPlan->name) ?? 'Not subscribed' }}</h4>
 
+                                    @if(now() > $business->subscription_end_date)
+                                    <div class="alert alert-danger" role="alert">
+                                        <strong>Your subscription has expired.</strong> Please renew to continue enjoying the benefits.
+                                    </div>
+                                    <div class="mt-4">
+                                        <a href="{{ route('subscription.upgrade') }}" class="btn btn-primary">Upgrade Plan</a>
+                                        <form action="{{ route('subscription.pay') }}" method="POST" style="display: inline;">
+                                            @csrf
+                                            <button type="submit" class="btn btn-success">Pay for Current Plan</button>
+                                        </form>
+                                    </div>
+                                    @else
                                     {{-- Subscription period details --}}
                                     <p><strong>Start Date:</strong> {{ $business->subscription_start_date->format('Y-m-d') }}</p>
                                     <p>
@@ -58,14 +70,6 @@
                                         <div class="progress-bar" role="progressbar" style="width: {{ $progressPercentage }}%;" aria-valuenow="{{ $progressPercentage }}" aria-valuemin="0" aria-valuemax="100"></div>
                                     </div>
 
-                                    {{-- Display expiration status --}}
-                                    @if(now() > $business->subscription_end_date)
-                                        <div class="alert alert-danger" role="alert">
-                                            <strong>Your subscription has expired.</strong> Please renew to continue enjoying the benefits.
-                                        </div>
-                                    @endif
-
-                                    {{-- Upgrade and Pay options --}}
                                     <div class="mt-4">
                                         <a href="{{ route('subscription.upgrade') }}" class="btn btn-primary">Upgrade Plan</a>
                                         <form action="{{ route('subscription.pay') }}" method="POST" style="display: inline;">
@@ -73,6 +77,9 @@
                                             <button type="submit" class="btn btn-success">Pay for Current Plan</button>
                                         </form>
                                     </div>
+                                   @endif
+
+                                   
                                 @else
                                     {{-- Display information for businesses that are not subscribed --}}
                                     <a href="{{ route('subscription.choose-plan') }}" class="btn btn-primary">Subscribe Now</a>

@@ -250,6 +250,13 @@
                                                         <td><em>Payment Method</em></td>
                                                         <td><strong>{{ @$purchase->payment_method }}</strong></td>
                                                     </tr>
+                                                    @if(@$purchase->payment_method == 'credit')
+                                                    <tr>
+                                                        <td colspan="4"></td>
+                                                        <td><em>Total Amount Paid</em></td>
+                                                        <td><strong>&#8358;{{ number_format(@$purchase->payment_amount,0) }}</strong></td>
+                                                    </tr>
+                                                    @endif
                                                     <tr>
                                                         <td colspan="4"></td>
                                                         <td><em>Note</em></td>
