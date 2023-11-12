@@ -253,8 +253,13 @@
                                                     @if(@$purchase->payment_method == 'credit')
                                                     <tr>
                                                         <td colspan="4"></td>
-                                                        <td><em>Total Amount Paid</em></td>
+                                                        <td><em>Partial Amount Paid (Before Full Payment)</em></td>
                                                         <td><strong>&#8358;{{ number_format(@$purchase->payment_amount,0) }}</strong></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan="4"></td>
+                                                        <td><em>Payment Status</em></td>
+                                                        <td><strong>{{ ucfirst($purchase->status) }}</strong></td>
                                                     </tr>
                                                     @endif
                                                     <tr>
