@@ -15,7 +15,7 @@ class CreateReturnsTable extends Migration
     {
         Schema::create('returns', function (Blueprint $table) {
             $table->id();
-            $table->string('return_no');
+            $table->string('receipt_no');
             $table->unsignedBigInteger('business_id')->nullable();
             $table->unsignedBigInteger('branch_id')->nullable();
             $table->unsignedBigInteger('staff_id')->nullable();
@@ -24,6 +24,7 @@ class CreateReturnsTable extends Migration
             $table->integer('discount')->default(0);
             $table->float('quantity');
             $table->string('customer_id')->nullable();
+            $table->string('channel')->nullable();
             $table->string('note')->nullable();
             $table->string('payment_method');
             $table->timestamps();

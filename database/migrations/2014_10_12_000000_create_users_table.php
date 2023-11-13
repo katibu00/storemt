@@ -19,6 +19,8 @@ class CreateUsersTable extends Migration
             $table->unsignedBigInteger('branch_id')->nullable();
             $table->string('name');
             $table->float('balance')->default(0);
+            $table->float('pre_balance')->default(0);
+            $table->float('deposit')->default(0);
             $table->string('usertype')->default('customer');
             $table->string('email')->unique();
             $table->string('phone')->unique();
@@ -27,7 +29,7 @@ class CreateUsersTable extends Migration
             $table->rememberToken();
             $table->timestamps();
         
-            // $table->foreign('business_id')->references('id')->on('businesses')->onDelete('set null');
+            $table->foreign('business_id')->references('id')->on('businesses')->onDelete('set null');
             // $table->foreign('branch_id')->references('id')->on('branches')->onDelete('set null');
         });
         

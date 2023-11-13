@@ -5,26 +5,26 @@ namespace App\Http\Controllers\SuperAdmin;
 use App\Http\Controllers\Controller;
 use App\Models\Branch;
 use App\Models\Business;
+use App\Models\SubscriptionPlan;
 use App\Models\User;
 use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Carbon\Carbon;
 
 class BusinessesController extends Controller
 {
     public function index()
     {
         $businesses = Business::all();
-
-        return view('super_admin.businesses.index', compact('businesses'));
+        $subsplans = SubscriptionPlan::where('name','!=','trial')->get();
+        return view('super_admin.businesses.index', compact('businesses','subsplans'));
     }
 
     public function create()
     {
         return view('super_admin.businesses.create');
     }
-
-
 
     public function store(Request $request)
     {
@@ -60,11 +60,14 @@ class BusinessesController extends Controller
         }
         
         
+        $trialPlan = SubscriptionPlan::where('name', 'Trial')->first();
 
-        // Save the business
+        $business->subscription_start_date = Carbon::now();
+        $business->subscription_end_date = Carbon::now()->addDays(30);
+        $business->subscription_plan_id = $trialPlan->id;
+
         $business->save();
 
-        // Create a new Branch instance
         $branch = new Branch();
         $branch->name = $request->input('main_branch_name');
         $branch->address = $request->input('main_branch_address');
@@ -72,7 +75,6 @@ class BusinessesController extends Controller
         $branch->email = $request->input('main_branch_email');
         $branch->description = 'main';
 
-        // Save the branch
         $business->branches()->save($branch);
 
         // Create a new User instance
@@ -99,6 +101,41 @@ class BusinessesController extends Controller
         return redirect()->route('business.index');
     }
 
+
+
+
+
+    public function manualFundingSubmit(Request $request, $id)
+    {
+        // Validate the form data
+        $request->validate([
+            'plan_id' => 'required',
+            'months' => 'required|integer|min:1',
+        ]);
+
+        $startDate = Carbon::now();
+        $endDate = $startDate->addMonths($request->input('months'));
+
+        $billingCycle = 'monthly';
+        if ($request->input('months') == 3) {
+            $billingCycle = 'quarterly';
+        } elseif ($request->input('months') == 12) {
+            $billingCycle = 'yearly';
+        }
+
+        $startDate = Carbon::today();
+        $endDate = $startDate->copy()->addMonths($request->months)->subDay(); // Subtract one day to make it the last day of the previous month
+
+        Business::where('id', $id)->update([
+            'subscription_status' => 'active',
+            'subscription_start_date' => $startDate,
+            'subscription_end_date' => $endDate,
+            'subscription_plan_id' => $request->plan_id,
+            'billing_cycle' => $billingCycle,
+        ]);
+
+        return redirect()->route('business.index')->with('success', 'Manual funding successful!');
+    }
 
 
 }

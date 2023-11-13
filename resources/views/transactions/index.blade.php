@@ -118,6 +118,13 @@
         <div class="content-wrap">
             <div class="container">
                 <form id="salesForm">
+                    @if (session('warning_message'))
+                        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                            {!! session('warning_message') !!}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    @endif
+                
                     <div class="row">
                         <div class="col-md-8 col-12 mb-3">
                             <div class="card mb-3">
@@ -129,6 +136,7 @@
                                         @endif
                                     </marquee>
                                 </div>
+                              
                                 <div class="card-body">
                                     <div class="form-group">
                                         <input type="text" id="productSearch" class="form-control"

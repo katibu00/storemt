@@ -17,13 +17,13 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('business_id');
             $table->unsignedBigInteger('branch_id');
-            $table->string('estimate_no');
+            $table->string('receipt_no');
             $table->unsignedBigInteger('product_id');
             $table->integer('price');
             $table->float('quantity');
             $table->integer('discount')->default(0);
             $table->unsignedBigInteger('staff_id')->nullable();
-            $table->string('customer_name');
+            $table->string('customer_id');
             $table->string('note')->nullable();
             $table->timestamps();
         

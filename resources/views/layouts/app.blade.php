@@ -11,8 +11,7 @@ $business = App\Models\Business::where('id', auth()->user()->business_id)->first
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
     <meta name="author" content="ukmisau" />
     <!-- Stylesheets -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="/css/bootstrap.css" type="text/css" />
     <link rel="stylesheet" href="/style.css" type="text/css" />
@@ -21,15 +20,15 @@ $business = App\Models\Business::where('id', auth()->user()->business_id)->first
     <link rel="stylesheet" href="/css/font-icons.css" type="text/css" />
     <link rel="stylesheet" href="/css/animate.css" type="text/css" />
     <link rel="stylesheet" href="/css/magnific-popup.css" type="text/css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.css"
-        integrity="sha512-Mo79lrQ4UecW8OCcRUZzf0ntfMNgpOFR46Acj2ZtWO8vKhBvD79VCp3VOKSzk6TovLg5evL3Xi3u475Q/jMu4g=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
+  
     <link rel="stylesheet" href="/css/custom.css" type="text/css" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="stylesheet" href="/css/colors.php?color=0275d8" type="text/css" />
     @yield('css')
 
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/css/select2.min.css" integrity="sha512-arEjGlJIdHpZzNfZD2IidQjDZ+QY9r4VFJIm2M/DhXLjvvPyXFj+cIotmo0DLgvL3/DOlIaEDwzEiClEPQaAFQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />    
     <style>
         input::-webkit-outer-spin-button,
@@ -102,7 +101,8 @@ $business = App\Models\Business::where('id', auth()->user()->business_id)->first
                                     <span class="dropdown-item disabled">{{ auth()->user()->name.' - '.auth()->user()->usertype }}</span>
                                     @if(auth()->user()->usertype == 'admin')
                                     <a class="dropdown-item" href="{{ route('business.settings') }}"><i class="icon-line-cog me-2"></i>Settings</a>
-                                    <a class="dropdown-item" href="{{ route('branches.index') }}"><i class="icon-line-code me-2"></i> Branches</a>
+                                    <a class="dropdown-item" href="{{ route('branches.index') }}"><i class="fa-solid fa-building-user"></i> Branches</a>
+                                    <a class="dropdown-item" href="{{ route('subscription.show') }}"><i class="fa-solid fa-money-bill"></i> Subscription</a>
                                     {{-- Other admin-related items --}}
                                     <div class="line m-0"></div>
                                     @endif

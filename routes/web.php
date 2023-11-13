@@ -16,6 +16,7 @@ use App\Http\Controllers\SalaryAdvanceController;
 use App\Http\Controllers\SalesController;
 use App\Http\Controllers\ShoppingListController;
 use App\Http\Controllers\SMSController;
+use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\SuperAdmin\BusinessesController;
 use App\Http\Controllers\SuppliersController;
 use App\Http\Controllers\UsersController;
@@ -69,6 +70,17 @@ Route::group(['middleware' => ['auth', 'super']], function () {
     Route::put('/businesses/{business}', 'BusinessController@update')->name('business.update');
     Route::delete('/businesses/{business}', 'BusinessController@destroy')->name('business.destroy');
 
+
+    Route::get('/business/manual-funding/{id}', 'BusinessController@manualFunding')->name('business.manual-funding');
+
+    Route::get('/business/delete/{id}', 'BusinessController@delete')->name('business.delete');///
+
+    Route::get('/business/suspend/{id}', 'BusinessController@suspend')->name('business.suspend');////
+
+    Route::get('/business/edit/{id}', 'BusinessController@edit')->name('business.edit');///
+    Route::post('/business/manual-funding-submit/{id}', [BusinessesController::class, 'manualFundingSubmit'])->name('business.manual-funding-submit');
+
+
     Route::get('/login-logs', [AuthController::class, 'loginLogs'])->name('login-logs');
 });
 
@@ -77,15 +89,24 @@ Route::group(['prefix' => 'business', 'middleware' => ['auth', 'admin']], functi
     Route::post('/settings', [ClientController::class, 'settingsSave']);
 });
 
+Route::group(['prefix' => 'subscription', 'middleware' => ['auth']], function () {
+    Route::get('/', [SubscriptionController::class, 'show'])->name('subscription.show');
+    Route::get('/choose-plan', [SubscriptionController::class, 'choosePlan'])->name('subscription.choose-plan');
+    Route::get('/confirm/{plan}',  [SubscriptionController::class, 'confirmSubscription'])->name('subscription.confirm');
+    Route::post('/subscription/proceed-to-payment', [SubscriptionController::class, 'proceedToPayment'])->name('subscription.proceed-to-payment');
+
+    Route::get('/upgrade', 'YourController@upgrade')->name('subscription.upgrade');////
+    Route::post('/pay', 'YourController@pay')->name('subscription.pay');///
+
+
+
+});
+
 Route::group(['prefix' => 'products', 'middleware' => ['auth', 'admin']], function () {
     Route::get('/', [ProductsController::class, 'index'])->name('products.index');
     Route::post('/store', [ProductsController::class, 'store'])->name('products.store');
-    // Route::get('/edit/{id}', [ProductsController::class, 'edit'])->name('products.edit');
-    // Route::get('/copy/{id}', [ProductsController::class, 'copyIndex'])->name('inventory.copy');
     Route::post('/update', [ProductsController::class, 'update'])->name('products.update');
-    // Route::post('/copy', [ProductsController::class, 'copyStore'])->name('products.copy');
     Route::post('/delete', [ProductsController::class, 'delete'])->name('products.delete');
-    // Route::post('/fetch-products', [ProductsController::class, 'fetchStocks'])->name('fetch-products');
     Route::post('/search-products', [ProductsController::class, 'Search'])->name('search-products');
     Route::post('/products/filter', [ProductsController::class, 'filter'])->name('products.filter');
     Route::post('/products/toggle-status', [ProductsController::class, 'toggleStatus'])->name('products.toggle-status');

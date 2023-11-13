@@ -24,8 +24,8 @@ class CreateBranchesTable extends Migration
             $table->text('description')->nullable();
             $table->timestamps();
         
-            // $table->foreign('business_id')->references('id')->on('businesses')->onDelete('cascade');
-            // $table->foreign('manager_id')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('business_id')->references('id')->on('businesses')->onDelete('cascade');
+            $table->foreign('manager_id')->references('id')->on('users')->onDelete('set null');
         });
         
         

@@ -20,7 +20,7 @@ class SalesController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $products = Product::where('branch_id', $user->branch_id)->orderBy('name')->get();
+        // $products = Product::where('branch_id', $user->branch_id)->orderBy('name')->get();
         $customers = User::select('id', 'name')->where('usertype', 'customer')->where('branch_id', $user->branch_id)->where('business_id',$user->business_id)->orderBy('name')->get();
 
         $latestTransactions = DB::table('sales')
@@ -82,7 +82,17 @@ class SalesController extends Controller
             ];
         }
 
-        return view('transactions.index', compact('transactionData', 'products', 'customers'));
+
+        $hasProducts = Product::where('business_id', $user->business_id)->where('branch_id', $user->branch_id)->first();
+
+        if (!$hasProducts) {
+
+            $warningMessage = 'No products have been added for this business. <a href="' . route('products.index') . '">Add products now</a>.';
+
+            session()->flash('warning_message', $warningMessage);
+        }
+
+        return view('transactions.index', compact('transactionData', 'customers'));
     }
 
     public function getProductSuggestions(Request $request)
