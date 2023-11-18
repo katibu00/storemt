@@ -250,7 +250,6 @@
                                                         <td><em>Payment Method</em></td>
                                                         <td><strong>{{ @$purchase->payment_method }}</strong></td>
                                                     </tr>
-                                                    @if(@$purchase->payment_method == 'credit')
                                                     <tr>
                                                         <td colspan="4"></td>
                                                         <td><em>Partial Amount Paid (Before Full Payment)</em></td>
@@ -261,7 +260,6 @@
                                                         <td><em>Payment Status</em></td>
                                                         <td><strong>{{ ucfirst($purchase->status) }}</strong></td>
                                                     </tr>
-                                                    @endif
                                                     <tr>
                                                         <td colspan="4"></td>
                                                         <td><em>Note</em></td>
@@ -319,7 +317,7 @@
 
                                     <div class="tab-pane fade" id="deposit-alt" role="tabpanel" aria-labelledby="active_deposit" tabindex="0">
                                         <div class="clear mt-4"></div>
-                                                                              @php
+                                        @php
                                             $deposits = App\Models\Payment::where('customer_id',$user->id)->where('business_id',auth()->user()->business_id)->where('payment_type','deposit')->latest()->get();
                                         @endphp
     
