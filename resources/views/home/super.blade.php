@@ -58,10 +58,10 @@
                                 <td>{{ $insight['totalProducts'] }}</td>
                                 <td>{{ $insight['salesCountToday'] }}</td>
                                 <td>
-                                    @if($insight['business']->isActive)
-                                        <span class="text-success">Active</span>
+                                    @if($insight['businessIsActive'])
+                                        <span class="badge bg-success">Active</span>
                                     @else
-                                        <span class="text-danger">Not Active</span>
+                                        <span class="badge bg-danger">Inactive</span>
                                     @endif
                                 </td>
                             </tr>

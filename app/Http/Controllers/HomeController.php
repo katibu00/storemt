@@ -418,15 +418,13 @@ class HomeController extends Controller
                 ->whereDate('login_at', '>=', Carbon::today()->subDays(10))
                 ->count();
 
-                $activeBusinesses = Business::whereHas('users.loginLogs', function ($query) {
-                    $query->where('login_at', '>=', now()->subDays(20))
-                          ->groupBy('user_id')
-                          ->havingRaw('COUNT(*) >= 5');
-                })->get();
-                
-                
+            $loginCountLast20Days = LoginLog::where('business_id', $business->id)
+                ->whereDate('login_at', '>=', Carbon::today()->subDays(20))
+                ->count();
 
-            $insight['activeBusinesses'] = $activeBusinesses;
+            $businessIsActive = $loginCountLast20Days >= 5; 
+
+            $insight['businessIsActive'] = $businessIsActive;
             $insight['business'] = $business;
             $insight['totalProducts'] = $totalProducts;
             $insight['lastUploadDate'] = $lastUploadDate;
