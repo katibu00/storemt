@@ -489,7 +489,6 @@ class SalesController extends Controller
     public function loadReceipt(Request $request)
     {
         $user = auth()->user();
-
         $transactionType = $request->transaction_type;
         $transactionNo = $request->receipt_no;
         $items = [];

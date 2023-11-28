@@ -72,10 +72,11 @@
 
 
     <script>
-        function PrintReceiptContent(receipt_no) {
-            data = {
+       function PrintReceiptContent(receipt_no, transaction_type) {
+            var data = {
                 'receipt_no': receipt_no,
-            }
+                'transaction_type': transaction_type,
+            };
 
             $.ajaxSetup({
                 headers: {
@@ -92,12 +93,10 @@
                     var total = 0;
                     var discount = 0;
 
-    
-
                     $.each(res.items, function(key, item) {
                         html +=
                             '<tr style="text-align: center">' +
-                            '<td style="text-align: left"><span style="font-size: 12px;" >' + item
+                            '<td style="text-align: left"><span style="font-size: 12px;">' + item
                             .product.name + '</span></td>' +
                             '<td style="font-size: 12px;">' + item.quantity + '</td>' +
                             '<td style="font-size: 12px;">' + item.price.toLocaleString() + '</td>' +
@@ -105,20 +104,22 @@
                             .toLocaleString() + '</td>' +
                             '</tr>';
                         total += item.quantity * item.price;
-                        discount += item.discount;
+
+                        discount += parseInt(item.discount);
                     });
 
                     var totalCal = total;
 
                     $('#receipt_body').html(html);
-                    $('.tran_id').html('S' + res.items[0].receipt_no);
-                    $('#cashier_name').html(res.staff);
+                    $('.tran_id').html(res.items[0].receipt_no);
+                    $('#cashier_name').html(res.items[0].staff.name);
+                    $('#customer_name').html(res.customer_name);
 
                     if (discount > 0) {
                         $('#salesdiscount').html('₦' + discount.toLocaleString());
                         $("#salesdiscounttr").show();
                         totalCal = total - discount;
-                    }else{
+                    } else {
                         $("#salesdiscounttr").hide();
                     }
                     $('#total').html('₦' + totalCal.toLocaleString());
@@ -134,25 +135,16 @@
                     myReceipt.focus();
                     myReceipt.print();
                 },
-
-
                 error: function(xhr, ajaxOptions, thrownError) {
                     if (xhr.status === 419) {
-                        Command: toastr["error"](
-                            "Session expired. please login again."
-                        );
-                        
-                        setTimeout(() => {
+                        toastr.error("Session expired. Please login again.");
+
+                        setTimeout(function() {
                             window.location.replace('{{ route('login') }}');
                         }, 2000);
                     }
                 },
             });
-
-
-            setTimeout(() => {
-                // myReceipt.close();
-            }, 8000);
         }
     </script>
 
