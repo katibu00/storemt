@@ -36,52 +36,65 @@
                                 <tr>
                                     <th>#</th>
                                     <th>Name</th>
-                                    <th>Address</th>
-                                    <th>Phone</th>
-                                    <th>Email</th>
-                                    <th>Action</th> <!-- New column for actions -->
+                                    <th>Logo</th>
+                                    <th>Username</th>
+                                    <th>Admin Phone</th>
+                                    <th>Has Multiple Branches</th>
+                                    <th>Subscription Status</th>
+                                    <th>Subscription Start Date</th>
+                                    <th>Subscription End Date</th>
+                                    <th>Billing Cycle</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <!-- Loop through businesses and populate the table rows -->
-                                @foreach($businesses as $business)
-                                @php
-                                $mainBranch = App\Models\Branch::where('business_id', $business->id)->where('description', 'main')->first();
-                                @endphp
-                                <tr>
-                                    <td>{{ $business->id }}</td>
-                                    <td>{{ $business->name }}</td>
-                                    <td>{{ @$mainBranch->address }}</td>
-                                    <td>{{ @$mainBranch->phone }}</td>
-                                    <td>{{ @$mainBranch->email }}</td>
-                                    <td>
-                                        <!-- Action dropdown -->
-                                        <div class="dropdown">
-                                            <button class="btn btn-secondary dropdown-toggle" type="button"
-                                                id="actionDropdown{{ $business->id }}" data-bs-toggle="dropdown"
-                                                aria-expanded="false">
-                                                Actions
-                                            </button>
-                                            <ul class="dropdown-menu" aria-labelledby="actionDropdown{{ $business->id }}">
-                                                <!-- Manual Funding option -->
-                                                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#manualFundingModal" onclick="setManualFundingBusinessId({{ $business->id }}, '{{ $business->name }}')"><i class="fas fa-money-bill"></i> Manual Funding</a></li>
-
-                                                <li><a class="dropdown-item"
-                                                        href="{{ route('business.delete', ['id' => $business->id]) }}"><i
-                                                            class="fas fa-trash"></i> Delete Business</a></li>
-                                                <li><a class="dropdown-item"
-                                                        href="{{ route('business.suspend', ['id' => $business->id]) }}"><i
-                                                            class="fas fa-pause"></i> Suspend Business</a></li>
-                                                <li><a class="dropdown-item"
-                                                        href="{{ route('business.edit', ['id' => $business->id]) }}"><i
-                                                            class="fas fa-edit"></i> Edit Business</a></li>
-                                            </ul>
-                                        </div>
-                                    </td>
-                                </tr>
+                                @foreach($businesses as $key => $business)
+                                    <tr>
+                                        <td>{{ $key+1 }}</td>
+                                        <td>{{ $business->name }}</td>
+                                        <td>
+                                            @if($business->logo)
+                                                <img src="{{ asset($business->logo) }}" alt="Business Logo" width="50" height="50">
+                                            @else
+                                                No Logo
+                                            @endif
+                                        </td>
+                                        <td>{{ $business->username }}</td>
+                                        <td>{{ $business->admin->phone ?? 'N/A' }}</td>
+                                        <td>{{ $business->has_multiple_branches ? 'Yes' : 'No' }}</td>
+                                        <td>{{ ucfirst($business->subscription_status) }}</td>
+                                        <td>{{ $business->subscription_start_date ?? 'N/A' }}</td>
+                                        <td>{{ $business->subscription_end_date ?? 'N/A' }}</td>
+                                        <td>{{ $business->billing_cycle ?? 'N/A' }}</td>
+                                        <td>
+                                            <div class="dropdown">
+                                                <button class="btn btn-secondary dropdown-toggle" type="button"
+                                                        id="actionDropdown{{ $business->id }}" data-bs-toggle="dropdown"
+                                                        aria-expanded="false">
+                                                    Actions
+                                                </button>
+                                                <ul class="dropdown-menu" aria-labelledby="actionDropdown{{ $business->id }}">
+                                                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                                           data-bs-target="#manualFundingModal"
+                                                           onclick="setManualFundingBusinessId({{ $business->id }}, '{{ $business->name }}')">
+                                                            <i class="fas fa-money-bill"></i> Manual Funding</a></li>
+                                                    <li><a class="dropdown-item"
+                                                           href="{{ route('business.delete', ['id' => $business->id]) }}"><i
+                                                                class="fas fa-trash"></i> Delete Business</a></li>
+                                                    <li><a class="dropdown-item"
+                                                           href="{{ route('business.suspend', ['id' => $business->id]) }}"><i
+                                                                class="fas fa-pause"></i> Suspend Business</a></li>
+                                                    <li><a class="dropdown-item"
+                                                           href="{{ route('business.edit', ['id' => $business->id]) }}"><i
+                                                                class="fas fa-edit"></i> Edit Business</a></li>
+                                                </ul>
+                                            </div>
+                                        </td>
+                                    </tr>
                                 @endforeach
                             </tbody>
                         </table>
+                        
                     </div>
                 </div>
             </div>

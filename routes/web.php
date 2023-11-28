@@ -66,7 +66,7 @@ Route::group(['middleware' => ['auth', 'super']], function () {
     Route::get('/businesses', [BusinessesController::class, 'index'])->name('business.index');
     Route::get('/businesses/create', [BusinessesController::class, 'create'])->name('business.create');
     Route::post('/businesses', [BusinessesController::class, 'store'])->name('business.store');
-    Route::get('/businesses/{business}/edit', 'BusinessController@edit')->name('business.edit');
+    // Route::get('/businesses/{business}/edit',[BusinessesController::class, 'edit'])->name('business.edit');
     Route::put('/businesses/{business}', 'BusinessController@update')->name('business.update');
     Route::delete('/businesses/{business}', 'BusinessController@destroy')->name('business.destroy');
 
@@ -77,7 +77,9 @@ Route::group(['middleware' => ['auth', 'super']], function () {
 
     Route::get('/business/suspend/{id}', 'BusinessController@suspend')->name('business.suspend');////
 
-    Route::get('/business/edit/{id}', 'BusinessController@edit')->name('business.edit');///
+    Route::get('/business/edit/{id}',[BusinessesController::class, 'edit'])->name('business.edit');
+    Route::put('/business/update/{id}', [BusinessesController::class, 'update'])->name('business.update');
+
     Route::post('/business/manual-funding-submit/{id}', [BusinessesController::class, 'manualFundingSubmit'])->name('business.manual-funding-submit');
 
 

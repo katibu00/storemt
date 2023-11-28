@@ -8,17 +8,17 @@ use App\Models\Business;
 use App\Models\SubscriptionPlan;
 use App\Models\User;
 use Brian2694\Toastr\Facades\Toastr;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Carbon\Carbon;
 
 class BusinessesController extends Controller
 {
     public function index()
     {
         $businesses = Business::all();
-        $subsplans = SubscriptionPlan::where('name','!=','trial')->get();
-        return view('super_admin.businesses.index', compact('businesses','subsplans'));
+        $subsplans = SubscriptionPlan::where('name', '!=', 'trial')->get();
+        return view('super_admin.businesses.index', compact('businesses', 'subsplans'));
     }
 
     public function create()
@@ -30,7 +30,7 @@ class BusinessesController extends Controller
     {
         // Validate the form data
         $request->validate([
-            'logo' => 'nullable|image|mimes:png,jpg,jpeg|max:100', 
+            'logo' => 'nullable|image|mimes:png,jpg,jpeg|max:100',
             'business_name' => 'required|string',
             'business_username' => 'required|string|unique:businesses,username',
             'has_multiple_branches' => 'nullable|boolean',
@@ -54,12 +54,11 @@ class BusinessesController extends Controller
         if ($request->hasFile('logo')) {
             $logoFile = $request->file('logo');
             $logoFileName = time() . '_' . $logoFile->getClientOriginalExtension();
-            $businessUsername = $business->username; 
+            $businessUsername = $business->username;
             $logoFile->move(public_path('uploads/' . $businessUsername), $logoFileName);
             $business->logo = 'uploads/' . $businessUsername . '/' . $logoFileName;
         }
-        
-        
+
         $trialPlan = SubscriptionPlan::where('name', 'Trial')->first();
 
         $business->subscription_start_date = Carbon::now();
@@ -101,10 +100,6 @@ class BusinessesController extends Controller
         return redirect()->route('business.index');
     }
 
-
-
-
-
     public function manualFundingSubmit(Request $request, $id)
     {
         // Validate the form data
@@ -136,6 +131,71 @@ class BusinessesController extends Controller
 
         return redirect()->route('business.index')->with('success', 'Manual funding successful!');
     }
+
+    public function edit($id)
+    {
+        $business = Business::findOrFail($id);
+        return view('super_admin.businesses.edit', compact('business'));
+    }
+
+   
+
+    public function update(Request $request, $id)
+    {
+        // Validate the form data
+        $request->validate([
+            // 'logo' => 'nullable|image|mimes:png,jpg,jpeg|max:100',
+            // 'business_name' => 'required|string',
+            // 'business_username' => 'required|string|unique:businesses,username,' . $id,
+            // 'has_multiple_branches' => 'nullable|boolean',
+            // 'main_branch_name' => 'required|string',
+            // 'main_branch_address' => 'required|string',
+            // 'main_branch_phone' => 'required|string',
+            // 'proprietor_name' => 'required|string',
+            // 'proprietor_phone' => 'required|string',
+//             'main_branch_email' => 'nullable|email|unique:branches,email,' . $id . ',id',
+// 'proprietor_email' => 'required|email|unique:users,email,' . $id . ',id',
+
+        ]);
+    
+        // Find the business to update
+        $business = Business::findOrFail($id);
+    
+        // Update business details
+        $business->name = $request->input('business_name');
+        $business->username = $request->input('business_username');
+        $business->has_branches = $request->has('has_multiple_branches');
+    
+        // Upload and save the logo if provided
+        if ($request->hasFile('logo')) {
+            $logoFile = $request->file('logo');
+            $logoFileName = time() . '_' . $logoFile->getClientOriginalExtension();
+            $businessUsername = $business->username;
+            $logoFile->move(public_path('uploads/' . $businessUsername), $logoFileName);
+            $business->logo = 'uploads/' . $businessUsername . '/' . $logoFileName;
+        }
+    
+        $business->save();
+    
+        // Update main branch details
+        $mainBranch = $business->mainBranch;
+        $mainBranch->name = $request->input('main_branch_name');
+        $mainBranch->address = $request->input('main_branch_address');
+        $mainBranch->phone = $request->input('main_branch_phone');
+        $mainBranch->email = $request->input('main_branch_email');
+        $mainBranch->save();
+    
+        // Update proprietor details
+        $proprietor = $business->admin;
+        $proprietor->name = $request->input('proprietor_name');
+        $proprietor->phone = $request->input('proprietor_phone');
+        $proprietor->email = $request->input('proprietor_email');
+        $proprietor->save();
+    
+        Toastr::success('Business updated successfully');
+        return redirect()->route('business.index');
+    }
+    
 
 
 }

@@ -34,7 +34,6 @@ class Business extends Model
 
     public function isSubscribed()
     {
-        // Check if the current date is within the subscription period
         return $this->subscription_status === 'active' && now()->between($this->subscription_start_date, $this->subscription_end_date);
     }
 
@@ -43,5 +42,15 @@ class Business extends Model
     {
         return $this->belongsTo(SubscriptionPlan::class);
     }
+
+    public function mainBranch()
+    {
+        return $this->hasOne(Branch::class, 'business_id','id')->where('description', 'main');
+    }
     
+
+    public function admin()
+    {
+        return $this->belongsTo(User::class, 'admin_id');
+    }
 }
