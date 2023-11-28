@@ -53,4 +53,9 @@ class Business extends Model
     {
         return $this->belongsTo(User::class, 'admin_id');
     }
+
+    public function users()
+    {
+        return $this->hasMany(User::class);
+    }
 }

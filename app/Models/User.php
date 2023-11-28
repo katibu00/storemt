@@ -54,4 +54,10 @@ class User extends Authenticatable
     {
         return $this->hasOne(Business::class, 'id', 'business_id');
     }
+
+    public function loginLogs()
+    {
+        return $this->hasMany(LoginLog::class);
+    }
+
 }

@@ -47,11 +47,8 @@
                         <tr>
                             <th>Business Name</th>
                             <th>Total Products</th>
-                            {{-- <th>Last Upload Date</th> --}}
-                            <th>Sales Count</th>
-                            {{-- <th>Last Sales Date</th> --}}
-                            <th>Login Count Last 10 Days</th>
-                            {{-- <th>Sales Count Last 10 Days</th> --}}
+                            <th>Todays Sales Count</th>
+                            <th>Active</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -59,11 +56,14 @@
                             <tr>
                                 <td>{{ $insight['business']->name }}</td>
                                 <td>{{ $insight['totalProducts'] }}</td>
-                                {{-- <td>{{ $insight['lastUploadDate'] }}</td> --}}
                                 <td>{{ $insight['salesCountToday'] }}</td>
-                                {{-- <td>{{ $insight['lastSalesDate'] }}</td> --}}
-                                <td>{{ $insight['loginCountLast10Days'] }}</td>
-                                {{-- <td>{{ $insight['salesCountLast10Days'] }}</td> --}}
+                                <td>
+                                    @if($insight['business']->isActive)
+                                        <span class="text-success">Active</span>
+                                    @else
+                                        <span class="text-danger">Not Active</span>
+                                    @endif
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>
