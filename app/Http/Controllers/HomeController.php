@@ -419,8 +419,11 @@ class HomeController extends Controller
                 ->count();
 
                 $activeBusinesses = Business::whereHas('users.loginLogs', function ($query) {
-                    $query->where('login_at', '>=', now()->subDays(15));
+                    $query->where('login_at', '>=', now()->subDays(20))
+                          ->groupBy('user_id')
+                          ->havingRaw('COUNT(*) >= 5');
                 })->get();
+                
                 
 
             $insight['activeBusinesses'] = $activeBusinesses;
