@@ -415,14 +415,12 @@ class HomeController extends Controller
             $lastSalesDate = Carbon::parse($business->lastSalesDate);
 
             $loginCountLast10Days = LoginLog::where('business_id', $business->id)
-                ->whereDate('login_at', '>=', Carbon::today()->subDays(10))
+                ->whereDate('login_at', '>=', Carbon::today()->subDays(14))
                 ->count();
 
-            $loginCountLast20Days = LoginLog::where('business_id', $business->id)
-                ->whereDate('login_at', '>=', Carbon::today()->subDays(20))
-                ->count();
+           
 
-            $businessIsActive = $loginCountLast20Days >= 5; 
+            $businessIsActive = $loginCountLast10Days >= 5; 
 
             $insight['businessIsActive'] = $businessIsActive;
             $insight['business'] = $business;
