@@ -47,7 +47,7 @@
                         <tr>
                             <th>Business Name</th>
                             <th>Total Products</th>
-                            <th>Todays Sales Count</th>
+                            <th>Gross Sales Yesterday</th>
                             <th>Active</th>
                         </tr>
                     </thead>
@@ -56,7 +56,7 @@
                             <tr>
                                 <td>{{ $insight['business']->name }}</td>
                                 <td>{{ $insight['totalProducts'] }}</td>
-                                <td>{{ $insight['salesCountToday'] }}</td>
+                                <td>{{ $insight['grossSalesYesterday'] }}</td>
                                 <td>
                                     @if($insight['businessIsActive'])
                                         <span class="badge bg-success">Active</span>

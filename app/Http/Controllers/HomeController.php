@@ -406,11 +406,9 @@ class HomeController extends Controller
 
             $totalProducts = Product::where('business_id', $business->id)->count();
 
-            $lastUploadDate = Carbon::parse($business->lastUploadDate);
-
-            $salesCountToday = Sale::where('business_id', $business->id)
-                ->whereDate('created_at', Carbon::today())
-                ->count();
+            $grossSalesYesterday = Sale::where('business_id', $business->id)
+            ->whereDate('created_at', Carbon::yesterday())
+            ->sum(DB::raw('price * quantity'));
 
             $lastSalesDate = Carbon::parse($business->lastSalesDate);
 
@@ -421,12 +419,10 @@ class HomeController extends Controller
            
 
             $businessIsActive = $loginCountLast10Days >= 5; 
-
+            $insight['grossSalesYesterday'] = $grossSalesYesterday;
             $insight['businessIsActive'] = $businessIsActive;
             $insight['business'] = $business;
             $insight['totalProducts'] = $totalProducts;
-            $insight['lastUploadDate'] = $lastUploadDate;
-            $insight['salesCountToday'] = $salesCountToday;
             $insight['lastSalesDate'] = $lastSalesDate;
             $insight['loginCountLast10Days'] = $loginCountLast10Days;
 
