@@ -562,8 +562,7 @@
                                             @foreach ($rankedCustomers as $key => $rankedCustomer)
                                                 <tr>
                                                     <td>{{ $key + 1 }}</td>
-                                                    <td>{{ $rankedCustomer['customer']->first_name }}
-                                                        {{ $rankedCustomer['customer']->last_name }}</td>
+                                                    <td>{{ $rankedCustomer['customer']->name }}</td>
                                                     <td>{{ number_format($rankedCustomer['total_purchases'], 0) }}</td>
                                                     <td>{{ number_format($rankedCustomer['total_payments'], 0) }}</td>
                                                     <td>{{ number_format($rankedCustomer['total_discounts'], 0) }}</td>
@@ -593,7 +592,7 @@
                                             @foreach ($debtors as $key => $debtor)
                                                 <tr>
                                                     <td>{{ $key + 1 }}</td>
-                                                    <td>{{ $debtor->first_name }} {{ $debtor->last_name }}</td>
+                                                    <td>{{ $debtor->name }}</td>
                                                     <td>{{ number_format($debtor->balance,0) }}</td>
                                                 </tr>
                                             @endforeach

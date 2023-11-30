@@ -29,7 +29,7 @@ class ReportController extends Controller
     {
         if ($request->report == 'general') {
             // Fetch sales data
-            $sales = Sale::where('branch_id', $request->branch_id)->where('business_id',auth()->user()->business_id)->whereNotIn('product_id', [1093, 1012]);
+            $sales = Sale::where('branch_id', $request->branch_id)->where('business_id',auth()->user()->business_id);
 
             if ($request->date == 'today') {
                 $sales = $sales->whereDate('created_at', now()->format('Y-m-d'));
@@ -113,7 +113,7 @@ class ReportController extends Controller
             $data['total_payments_value'] = $payments->sum('payment_amount');
 
             // Fetch products data
-            $products = Product::where('branch_id', $request->branch_id)->where('business_id',auth()->user()->business_id)->where('quantity', '>', 0)->whereNotIn('id', [1093, 1012])->get();
+            $products = Product::where('branch_id', $request->branch_id)->where('business_id',auth()->user()->business_id)->where('quantity', '>', 0)->get();
             $data['stock_value'] = $products->sum(function ($stock) {
                 return @$stock->quantity * @$stock->buying_price;
             });
@@ -139,7 +139,6 @@ class ReportController extends Controller
             $query = Sale::select('product_id', DB::raw('SUM(quantity) as total_quantity'))
                 ->where('branch_id', $branchId)
                 ->where('business_id',auth()->user()->business_id)
-                ->whereNotIn('product_id', [1093, 1012])
                 ->groupBy('product_id')
                 ->orderBy('total_quantity', 'desc');
 
@@ -160,7 +159,6 @@ class ReportController extends Controller
 
             // Calculate total sales
             $totalSales = Sale::where('branch_id', $branchId)
-                ->whereNotIn('product_id', [1093, 1012])
                 ->where('business_id',auth()->user()->business_id)
                 ->when($date == 'range', function ($query) use ($startDate, $endDate) {
                     $query->whereBetween('created_at', [$startDate, $endDate]);
@@ -296,7 +294,6 @@ class ReportController extends Controller
             $query = Sale::select('product_id', DB::raw('SUM(quantity) as total_quantity'))
                 ->where('branch_id', $branchId)
                 ->where('business_id',auth()->user()->business_id)
-                ->whereNotIn('product_id', [1093, 1012])
                 ->groupBy('product_id')
                 ->orderBy('total_quantity');
 
@@ -314,7 +311,6 @@ class ReportController extends Controller
 
             // Calculate total sales
             $totalSales = Sale::where('branch_id', $branchId)
-                ->whereNotIn('product_id', [1093, 1012])
                 ->where('business_id',auth()->user()->business_id)
                 ->when($date == 'range', function ($query) use ($startDate, $endDate) {
                     $query->whereBetween('created_at', [$startDate, $endDate]);
@@ -360,7 +356,6 @@ class ReportController extends Controller
 
                 // Calculate gross sales
                 $grossSales[$branchId] = Sale::where('branch_id', $branchId)
-                    ->whereNotIn('product_id', [1093, 1012])
                     ->where('business_id',auth()->user()->business_id)
                     ->whereBetween('created_at', [$startDate, Carbon::now()])
                     ->sum(DB::raw('price * quantity'));
@@ -392,7 +387,6 @@ class ReportController extends Controller
                 $netProfit[$branchId] = Sale::with('product')
                     ->where('branch_id', $branchId)
                     ->where('business_id',auth()->user()->business_id)
-                    ->whereNotIn('product_id', [1093, 1012])
                     ->whereBetween('created_at', [$startDate, Carbon::now()])
                     ->get()
                     ->sum(function ($sale) {
@@ -402,7 +396,6 @@ class ReportController extends Controller
                 // Calculate average transaction value
                 $avgTransactionValue[$branchId] = Sale::where('branch_id', $branchId)
                     ->where('business_id',auth()->user()->business_id)
-                    ->whereNotIn('product_id', [1093, 1012])
                     ->whereBetween('created_at', [$startDate, Carbon::now()])
                     ->avg('price');
 
@@ -441,13 +434,10 @@ class ReportController extends Controller
                     'branch' => $branch,
                     'grossSales' => Sale::join('products', 'sales.product_id', '=', 'products.id')
                         ->where('sales.branch_id', $branch->id)
-                       
-                        ->whereNotIn('product_id', [1093, 1012])
                         ->whereBetween('sales.created_at', [$startDate, Carbon::now()])
                         ->sum(DB::raw('sales.price * sales.quantity')),
                     'netProfit' => Sale::join('products', 'sales.product_id', '=', 'products.id')
                         ->where('sales.branch_id', $branch->id)
-                        ->whereNotIn('product_id', [1093, 1012])
                         ->whereBetween('sales.created_at', [$startDate, Carbon::now()])
                         ->sum(DB::raw('sales.quantity * (sales.price - products.buying_price) - sales.discount')),
                     'expenses' => Expense::where('branch_id', $branch->id)
@@ -456,10 +446,9 @@ class ReportController extends Controller
                     'creditsOwed' => User::where('branch_id', $branch->id)->sum('balance'),
                     'discounts' => Sale::where('branch_id', $branch->id)
                          ->where('business_id',auth()->user()->business_id)
-                        ->whereNotIn('product_id', [1093, 1012])
                         ->whereBetween('created_at', [$startDate, Carbon::now()])
                         ->sum('discount'),
-                    'stockValueLeft' => Product::where('branch_id', $branch->id)->whereNotIn('id', [1093, 1012])->sum(DB::raw('quantity * buying_price')),
+                    'stockValueLeft' => Product::where('branch_id', $branch->id)->sum(DB::raw('quantity * buying_price')),
 
                 ];
 
@@ -519,7 +508,6 @@ class ReportController extends Controller
             $rankedCustomers = array_slice($rankedCustomers, 0, 20);
 
             $data['rankedCustomers'] = $rankedCustomers;
-
         }
 
 
@@ -532,7 +520,6 @@ class ReportController extends Controller
             ->get();
 
             $data['debtors'] = $debtors;
-
         }
 
         if ($request->report == 'today') {
@@ -567,7 +554,7 @@ class ReportController extends Controller
 
             }
             $data['todays_estimate'] = $todays_estimate;
-            $data['estimate_count'] = Estimate::select('estimate_no')->where('branch_id', $request->branch_id)->where('business_id',auth()->user()->business_id)->whereDate('created_at', Carbon::today())->groupBy('estimate_no')->get()->count();
+            $data['estimate_count'] = Estimate::select('receipt_no')->where('branch_id', $request->branch_id)->where('business_id',auth()->user()->business_id)->whereDate('created_at', Carbon::today())->groupBy('receipt_no')->get()->count();
 
             //return
             $returns = Returns::where('branch_id', $request->branch_id)->where('business_id',auth()->user()->business_id)->whereDate('created_at', Carbon::today())->get();
@@ -578,7 +565,7 @@ class ReportController extends Controller
 
             }
             $data['todays_returns'] = $todays_returns;
-            $data['returns_count'] = Returns::select('return_no')->where('branch_id', $request->branch_id)->where('business_id',auth()->user()->business_id)->whereDate('created_at', Carbon::today())->groupBy('return_no')->get()->count();
+            $data['returns_count'] = Returns::select('receipt_no')->where('branch_id', $request->branch_id)->where('business_id',auth()->user()->business_id)->whereDate('created_at', Carbon::today())->groupBy('receipt_no')->get()->count();
 
             $lows = 0;
             $total_stock = 0;
@@ -603,7 +590,7 @@ class ReportController extends Controller
 
     }
 
-    public function fetchproducts(Request $request)
+    public function fetchStocks(Request $request)
     {
         $branchId = $request->input('branch_id');
         $products = Product::where('branch_id', $branchId)->groupBy('name')->where('business_id',auth()->user()->business_id)->get();
