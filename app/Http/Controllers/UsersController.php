@@ -136,7 +136,7 @@ class UsersController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
         // dd($data['dat÷es']);
-        $data['payments'] = Payment::select('id', 'payment_amount', 'payment_method', 'created_at')->where('business_id', auth()->user()->business_id)->where('branch_id', auth()->user()->branch_id)->where('payment_type', 'credit')->where('customer_id', $id)->orderBy('created_at', 'desc')->take(10)->get();
+        $data['payments'] = Payment::select('id', 'payment_amount', 'payment_method', 'created_at')->where('business_id', auth()->user()->business_id)->where('branch_id', auth()->user()->branch_id)->where('payment_type', 'credit')->where('customer_id', $id)->orderBy('created_at', 'desc')->get();
 
         $data['shoppingHistory'] = Sale::where('customer_id', $id)
             ->orderBy('created_at', 'desc')
