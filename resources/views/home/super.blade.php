@@ -56,7 +56,7 @@
                             <tr>
                                 <td>{{ $insight['business']->name }}</td>
                                 <td>{{ $insight['totalProducts'] }}</td>
-                                <td>{{ $insight['grossSalesYesterday'] }}</td>
+                                <td>{{ number_format($insight['grossSalesYesterday'],0) }}</td>
                                 <td>
                                     @if($insight['businessIsActive'])
                                         <span class="badge bg-success">Active</span>
