@@ -61,7 +61,7 @@
                                         </td>
                                         <td>{{ $business->username }}</td>
                                         <td>{{ $business->admin->phone ?? 'N/A' }}</td>
-                                        <td>{{ $business->has_multiple_branches ? 'Yes' : 'No' }}</td>
+                                        <td>{{ $business->has_branches ? 'Yes' : 'No' }}</td>
                                         <td>{{ ucfirst($business->subscription_status) }}</td>
                                         <td>{{ $business->subscription_start_date ?? 'N/A' }}</td>
                                         <td>{{ $business->subscription_end_date ?? 'N/A' }}</td>
