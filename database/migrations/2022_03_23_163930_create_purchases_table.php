@@ -18,8 +18,11 @@ class CreatePurchasesTable extends Migration
             $table->unsignedBigInteger('business_id');
             $table->unsignedBigInteger('branch_id');
             $table->unsignedBigInteger('product_id');
-            $table->float('buying_price');
+            $table->float('new_buying_price')->nullable();
             $table->float('quantity');
+            $table->float('old_quantity');
+            $table->float('old_buying_price')->nullable();
+            $table->float('old_selling_price')->nullable();
             $table->date('date');
             $table->timestamps();
         

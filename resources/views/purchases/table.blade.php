@@ -1,5 +1,5 @@
 <div class="table-responsive text=nowrap">
-    <table class="table d-none table-hover" style="width:100%">
+    <table class="table qd-none table-hover" style="width:100%">
         <thead>
             <tr>
                 <th scope="col">#</th>

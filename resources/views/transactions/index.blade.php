@@ -630,6 +630,7 @@
                     $('.tran_id').html(res.items[0].receipt_no);
                     $('#cashier_name').html(res.items[0].staff.name);
                     $('#customer_name').html(res.customer_name);
+                    $('#paid_by').html(res.items[0].payment_method);
 
                     if (discount > 0) {
                         $('#salesdiscount').html('₦' + discount.toLocaleString());

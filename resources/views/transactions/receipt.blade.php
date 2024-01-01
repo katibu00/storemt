@@ -73,8 +73,9 @@ $user = auth()->user();
             Website: {{  $user->business->website }}
         </div>
         <div style="font-size: 12px; margin-top: 10px;">Ref ID: <span class="tran_id"></span></div>
-        <div style="font-size: 13px; margin-top: 5px;margin-bottom: 10px;">Cashier: <span id="cashier_name"></span></div> 
-        <div style="font-size: 13px; margin-top: 5px;margin-bottom: 10px;">Customer: <span id="customer_name"></span></div> 
+        <div style="font-size: 13px; margin-top: 5px;margin-bottom: 0px;">Cashier: <span id="cashier_name"></span></div> 
+        <div style="font-size: 13px; margin-top: 5px;margin-bottom: 0px;">Customer: <span id="customer_name"></span></div> 
+        <div style="font-size: 13px; margin-top: 5px;margin-bottom: 15px;">Paid By: <span id="paid_by"></span></div> 
 
     <table>
         <thead>

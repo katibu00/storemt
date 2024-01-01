@@ -23,6 +23,17 @@
                     <div class="col-sm-4 col-md-2"><a class="btn btn-sm btn-primary me-2" href="{{ route('purchase.create') }}">+ New Purchases</a></div>
                 </div>
                 <div class="card-body">
+                    @if(session('success'))
+                    <div class="alert alert-success mt-3">
+                        {{ session('success') }}
+                    </div>
+                @endif
+            
+                @if(session('error'))
+                    <div class="alert alert-danger mt-3">
+                        {{ session('error') }}
+                    </div>
+                @endif
                     <div class="table-data">
                         @include('purchases.table')
                     </div>

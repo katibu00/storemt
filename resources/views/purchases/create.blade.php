@@ -1,11 +1,19 @@
 @extends('layouts.app')
 @section('PageTitle', 'Add New Purchases')
 @section('content')
+<style>
+    .read-only-field {
+    background-color: #f8f8f8; /* Light gray background color */
+    color: #555; /* Dark gray text color */
+    cursor: not-allowed; /* Display "not-allowed" cursor on hover to indicate read-only */
+}
+</style>
     <!-- ============ Body content start ============= -->
     <section id="content">
-        <div class="content-wraap mt-3">
+        <div class="content-wrap mt-3">
             <div class="container clearfix">
-                <form id="salesForm">
+                <form action="{{ route('purchase.store') }}" method="POST">
+                    @csrf
                     <div class="row mb-4">
                         <div class="col-md-12 mb-4">
                             <div class="card mb-2">
@@ -13,77 +21,87 @@
                                     <div class="col-5"><span class="text-bold fs-16">Add New Purchases ({{ auth()->user()->branch->name }} Branch)</span></div>
                                     <div class="col-sm-4 col-md-2"><a class="btn btn-sm btn-secondary me-2" href="{{ route('purchase.index') }}"> <--- Back to list</a></div>
                                 </div>
-                                <div class="card-body sales-table">
-                                    <div class="table-responsive">
-
-                                        <div class="row">
-                                            <div class="col-md-4">
-                                                <div class="mb-2">
-                                                    <label for="picker1">Date</label>
-                                                    <input class="form-control form-control-sm" type="date" name="date" required>
-                                                </div>
-                                            </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="mb-2">
+                                            <label for="picker1">Date</label>
+                                            <input class="form-control form-control-sm" type="date" name="date" required>
                                         </div>
-
-                                        <table class="table table-bordered text-center">
+                                    </div>
+                                </div>
+                                <div class="card-body sales-table">
+                                    @if($errors->any())
+                                        <div class="alert alert-danger mt-3">
+                                            <ul>
+                                                @foreach($errors->all() as $error)
+                                                    <li>{{ $error }}</li>
+                                                @endforeach
+                                            </ul>
+                                        </div>
+                                    @endif
+                                    @if(session('success'))
+                                    <div class="alert alert-success mt-3">
+                                        {{ session('success') }}
+                                    </div>
+                                @endif
+                            
+                                @if(session('error'))
+                                    <div class="alert alert-danger mt-3">
+                                        {{ session('error') }}
+                                    </div>
+                                @endif
+                                    <div class="table-responsive">
+                                        <table class="table">
                                             <thead>
                                                 <tr>
-                                                    <th style="width: 2%"></th>
-                                                    <th style="width: 30%">Product <span class="text-danger">*</span></th>
-                                                    <th>Quantity <span class="text-danger">*</span></th>
-                                                    <th>Buying Price</th>
-                                                    <th>Selling Price</th>
-                                                    <th>
-                                                        <a href="#" class="btn btn-success add_row rounded-circle"><i
-                                                                class="fa fa-plus"></i></a>
-                                                    </th>
+                                                    <th>S/N</th>
+                                                    <th>Product</th>
+                                                    <th>Old Purchase Price</th>
+                                                    <th>Old Selling Price</th>
+                                                    <th>Quantity</th>
+                                                    <th>Price Changed</th>
+                                                    <th>New Purchase Price</th>
+                                                    <th>New Selling Price</th>
+                                                    <th>Action</th>
                                                 </tr>
                                             </thead>
-                                            <tbody class="addMoreRow">
+                                            <tbody>
                                                 <tr>
                                                     <td>1</td>
                                                     <td>
-
-                                                        <select class="form-select product_id" id="product_id"
-                                                            name="product_id[]" required>
+                                                        <select class="form-select form-select-sm productSelect" name="product[]" required>
                                                             <option value=""></option>
                                                             @foreach ($products as $product)
-                                                                <option data-price="{{ $product->selling_price }}"
-                                                                    data-quantity="{{ $product->quantity }}"
-                                                                    value="{{ $product->id }}">{{ $product->name }} - N{{ number_format($product->buying_price,0) }}
-                                                                </option>
+                                                                <option value="{{ $product->id }}" data-buying-price="{{ $product->buying_price }}" data-selling-price="{{ $product->selling_price }}">{{ $product->name }}</option>
                                                             @endforeach
                                                         </select>
                                                     </td>
-                                                    <td>
-                                                        <input type="number" name="quantity[]" step="0.5" id="quantity" class="form-control" required>
-                                                    </td>
-                                                    <td>
-                                                        <input type="number" name="buying_price[]" id="buying_price"
-                                                            class="form-control price">
-                                                    </td>
-                                                    <td>
-                                                        <input type="number" name="selling_price[]" id="selling_price"
-                                                            class="form-control discount">
-                                                    </td>
-                                                    <td >
-                                                        <a href="#"
-                                                            class="btn btn-danger btn-sm remove_row rounded-circle"><i
-                                                                class="fa fa-times-circle"></i></a>
-                                                    </td>
+                                                    <td><input class="form-control form-control-sm oldPurchasePrice read-only-field" type="text" name="old_purchase_price[]" readonly></td>
+                                                    <td><input class="form-control form-control-sm oldSellingPrice read-only-field" type="text" name="old_selling_price[]" readonly></td>
+                                                    <td><input class="form-control form-control-sm" type="text" name="quantity[]"></td>
+                                                    <td><input type="checkbox" class="priceChangedCheckbox" name="price_changed[]"></td>
+                                                    <td><input class="form-control form-control-sm newPurchasePrice" type="text" name="new_purchase_price[]" style="display: none;"></td>
+                                                    <td><input class="form-control form-control-sm newSellingPrice" type="text" name="new_selling_price[]" style="display: none;"></td>
+                                                    <td><button type="button" class="btn btn-danger btn-sm deleteRow">X</button></td>
                                                 </tr>
                                             </tbody>
+                                            <tfoot>
+                                                <tr>
+                                                    <td colspan="5"></td>
+                                                    <td>Total Buying Price:</td>
+                                                    <td><span id="totalBuyingPrice">0.00</span></td>
+                                                    <td></td>
+                                                </tr>
+                                            </tfoot>
                                         </table>
-                                        <button type="submit" class="btn btn-primary ml-2">Submit</button>
+                                        <button type="button" class="btn btn-success" id="addRow">Add New Row</button>
+                                        <button type="submit" class="btn btn-primary">Submit</button>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
-                      
                     </div>
                 </form>
-              
             </div>
         </div>
     </section>
@@ -91,77 +109,77 @@
 
 @section('js')
     <script>
-        $('.add_row').on('click', function() {
-            var product = $('.product_id').html();
-            var numberofrow = ($('.addMoreRow tr').length - 0) + 1;
-            var tr = '<tr><td class="no">' + numberofrow + '</td>' +
-                '<td><select class="form-select product_id" name="product_id[]" required>' + product +
-                '<td><input type="number" name="quantity[]" step="0.5" class="form-control" required></td>' +
-                '<td><input type="number" name="buying_price[]" class="form-control"></td>' +
-                '<td><input type="number" name="selling_price[]" class="form-control"></td>' +
-                '<td><a class="btn btn-danger btn-sm remove_row rounded-circle"><i class="fa fa-times-circle"></i></a></td></tr>';
-            $('.product_id').select2();
-            $('.addMoreRow').append(tr);
-        });
+        $(document).ready(function () {
+            // Add new row button functionality
+            $("#addRow").click(function () {
+                var rowCount = $("tbody tr").length + 1;
+                var newRow = $("tbody tr:first").clone();
+                newRow.find("td:first").text(rowCount);
 
-        $('.addMoreRow').delegate('.remove_row', 'click', function() {
-            $(this).parent().parent().remove();
-        });
+                // Reset values in the cloned row
+                newRow.find(".productSelect").val('');
+                newRow.find(".oldPurchasePrice").val('');
+                newRow.find(".oldSellingPrice").val('');
+                newRow.find(".priceChangedCheckbox").prop('checked', false);
+                newRow.find(".newPurchasePrice").val('').hide();
+                newRow.find(".newSellingPrice").val('').hide();
 
-        $('.product_id').select2();
+                $("tbody").append(newRow);
+                updateTotalBuyingPrice();
+            });
 
-    
-    </script>
+            // Delete row button functionality
+            $("tbody").on("click", ".deleteRow", function () {
+                $(this).closest("tr").remove();
+                updateSerialNumbers();
+                updateTotalBuyingPrice();
+            });
 
-    <script>
-        $(document).ready(function() {
+            // Product select change event
+            $("tbody").on("change", ".productSelect", function () {
+                var buyingPrice = $(this).find(':selected').data('buying-price');
+                var sellingPrice = $(this).find(':selected').data('selling-price');
+                $(this).closest("tr").find(".oldPurchasePrice").val(buyingPrice);
+                $(this).closest("tr").find(".oldSellingPrice").val(sellingPrice);
+                updateTotalBuyingPrice();
+            });
 
-            $(document).on('submit', '#salesForm', function(e) {
-                e.preventDefault();
-                let formData = new FormData($('#salesForm')[0]);
-                $.LoadingOverlay("show");
-                $.ajaxSetup({
-                    headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            // Checkbox change event
+            $("tbody").on("change", ".priceChangedCheckbox", function () {
+                var row = $(this).closest("tr");
+                if ($(this).is(":checked")) {
+                    row.find(".newPurchasePrice").show();
+                    row.find(".newSellingPrice").show();
+                } else {
+                    row.find(".newPurchasePrice").hide();
+                    row.find(".newSellingPrice").hide();
+                }
+                updateTotalBuyingPrice();
+            });
+
+            // Update serial numbers
+            function updateSerialNumbers() {
+                $("tbody tr").each(function (index) {
+                    $(this).find("td:first").text(index + 1);
+                });
+            }
+
+            // Update total buying price
+            function updateTotalBuyingPrice() {
+                var totalBuyingPrice = 0;
+                $("tbody tr").each(function () {
+                    var newPurchasePrice = $(this).find(".newPurchasePrice").val();
+                    var oldPurchasePrice = $(this).find(".oldPurchasePrice").val();
+
+                    if ($(this).find(".priceChangedCheckbox").is(":checked") && newPurchasePrice) {
+                        totalBuyingPrice += parseFloat(newPurchasePrice);
+                    } else {
+                        totalBuyingPrice += parseFloat(oldPurchasePrice);
                     }
                 });
 
-                $.ajax({
-                    type: "POST",
-                    url: "{{ route('purchase.store') }}",
-                    data: formData,
-                    contentType: false,
-                    processData: false,
-                    success: function(res) {
-
-                        if (res.status == 201) {
-                            $.LoadingOverlay("hide");
-                            $('#salesForm')[0].reset();
-                            $(".product_id"). val('none').trigger('change');
-
-                            Command: toastr["success"](res.message);
-                            toastr.options = {
-                                closeButton: false,
-                                debug: false,
-                                newestOnTop: false,
-                                progressBar: false,
-                                positionClass: "toast-top-right",
-                                preventDuplicates: false,
-                                onclick: null,
-                                showDuration: "300",
-                                hideDuration: "1000",
-                                timeOut: "5000",
-                                extendedTimeOut: "1000",
-                                showEasing: "swing",
-                                hideEasing: "linear",
-                                showMethod: "fadeIn",
-                                hideMethod: "fadeOut",
-                            };
-                        }
-                    }
-                })
-            });
-
+                $("#totalBuyingPrice").text(totalBuyingPrice.toFixed(2));
+            }
         });
     </script>
 @endsection
