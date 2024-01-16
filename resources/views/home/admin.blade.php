@@ -81,13 +81,13 @@
                                 <div class="card-body">
                                     <h5 class="card-title">Cash Balance</h5>
                                     <?php
-                                    $result = $cashSales - ($cashExpenses + $cashReturns) + $cashCreditPayments + $cashDepositPayments;
+                                    $result = $cashSales - ($cashExpenses + $cashReturns) + $cashCreditPayments + $cashDepositPayments + ($cashFundTransfer);
                                     $formattedResult = number_format($result);
                                     ?>
 
                                     <p class="card-text">&#8358;{{ $formattedResult }}</p>
                                     <h6 class="card-subtitle mb-2 text-muted">
-                                        {{ 'Sales: ' . $cashSales . ', Returns: ' . $cashReturns . ', Expenses: ' . $cashExpenses . ', Repayments: ' . $cashCreditPayments . ', Deposit ' . $cashDepositPayments }}
+                                        {{ 'Sales: ' . $cashSales . ', Returns: ' . $cashReturns . ', Expenses: ' . $cashExpenses . ', Repayments: ' . $cashCreditPayments . ', Deposit ' . $cashDepositPayments.', Funds Transfer '.$cashFundTransfer }}
                                     </h6>
                                 </div>
                             </div>
@@ -99,14 +99,14 @@
                                     <h5 class="card-title">Transfer Balance</h5>
 
                                     <?php
-                                    $transferResult = $transferSales - ($transferExpenses + $transferReturns) + $transferCreditPayments + $transferDepositPayments;
+                                    $transferResult = $transferSales - ($transferExpenses + $transferReturns) + $transferCreditPayments + $transferDepositPayments + ($transferFundTransfer);
                                     $formattedTransferResult = number_format($transferResult);
                                     ?>
 
                                     <p class="card-text">&#8358;{{ $formattedTransferResult }}</p>
 
                                     <h6 class="card-subtitle mb-2 text-muted">
-                                        {{ 'Sales: ' . $transferSales . ', Returns: ' . $transferReturns . ', Expenses: ' . $transferExpenses . ', Repayments: ' . $transferCreditPayments . ', Deposit ' . $transferDepositPayments }}
+                                        {{ 'Sales: ' . $transferSales . ', Returns: ' . $transferReturns . ', Expenses: ' . $transferExpenses . ', Repayments: ' . $transferCreditPayments . ', Deposit ' . $transferDepositPayments.', Funds Transfer '.$transferFundTransfer }}
                                     </h6>
                                 </div>
                             </div>
@@ -116,20 +116,18 @@
                                 <div class="card-body">
                                     <h5 class="card-title">POS Balance</h5>
                                     <?php
-                                    $posResult = $posSales - ($posExpenses + $posReturns) + $posCreditPayments + $posDepositPayments;
+                                    $posResult = $posSales - ($posExpenses + $posReturns) + $posCreditPayments + $posDepositPayments + ($posFundTransfer);
                                     $formattedPosResult = number_format($posResult);
                                     ?>
 
                                     <p class="card-text">&#8358;{{ $formattedPosResult }}</p>
 
                                     <h6 class="card-subtitle mb-2 text-muted">
-                                        {{ 'Sales: ' . $posSales . ', Returns: ' . $posReturns . ', Expenses: ' . $posExpenses . ', Repayments: ' . $posCreditPayments . ', Deposit ' . $posDepositPayments }}
+                                        {{ 'Sales: ' . $posSales . ', Returns: ' . $posReturns . ', Expenses: ' . $posExpenses . ', Repayments: ' . $posCreditPayments . ', Deposit ' . $posDepositPayments.', Funds Transfer '.$posFundTransfer }}
                                     </h6>
                                 </div>
                             </div>
                         </div>
-
-
                     </div>
                 </div>
 

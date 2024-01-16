@@ -16,6 +16,26 @@
                     </div>
                 </div>
                 <div class="card-body">
+                    
+                @if (session('success'))
+                <div class="alert alert-success">
+                    {{ session('success') }}
+                </div>
+            @endif
+            @if (session('error'))
+                <div class="alert alert-danger">
+                    {{ session('error') }}
+                </div>
+            @endif
+            @if ($errors->any())
+                <div class="alert alert-danger">
+                    <ul>
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
                     <div class="table-responsive">
                         <table class="table" style="width: 100%">
                             <thead>
@@ -88,7 +108,7 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title" id="myModalLabel">Add New User</h4>
+                    <h4 class="modal-title" id="myModalLabel">Add New Staff</h4>
                     <button type="button" class="btn-close btn-sm" data-bs-dismiss="modal" aria-hidden="true"></button>
                 </div>
                 <form action="{{ route('users.store') }}" method="POST">
@@ -96,15 +116,15 @@
                     <div class="modal-body">
                         <div class="form-group">
                             <label for="name" class="col-form-label">Full Name:</label>
-                            <input type="text" class="form-control" id="name" name="name" required>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ old('name') }}" required>
                         </div>
                         <div class="form-group">
                             <label for="email" class="col-form-label">Email:</label>
-                            <input type="email" class="form-control" id="email" name="email">
+                            <input type="email" class="form-control" id="email" name="email" value="{{ old('email') }}">
                         </div>
                         <div class="form-group">
                             <label for="phone" class="col-form-label">Phone:</label>
-                            <input type="text" class="form-control" id="phone" name="phone" required>
+                            <input type="text" class="form-control" id="phone" name="phone" value="{{ old('phone') }}" required>
                         </div>
                         @if(auth()->user()->business->has_branches)
                             <div class="form-group">
@@ -121,10 +141,10 @@
                             <label for="position">Position</label>
                             <select class="form-control" id="position" name="position" required>
                                 <option value=""></option>
-                                <option value="admin">Admin</option>
-                                <option value="cashier">Cashier</option>
-                                <option value="clerk">Clerk</option>
-                                <option value="security">Security</option>
+                                <option value="admin" {{ old('position') == 'admin' ? 'selected' : '' }}>Admin</option>
+                                <option value="cashier" {{ old('position') == 'cashier' ? 'selected' : '' }}>Cashier</option>
+                                <option value="clerk" {{ old('position') == 'clerk' ? 'selected' : '' }}>Clerk</option>
+                                <option value="security" {{ old('position') == 'security' ? 'selected' : '' }}>Security</option>
                             </select>
                         </div>
                         <div class="form-group">

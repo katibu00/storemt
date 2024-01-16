@@ -1,58 +1,38 @@
-@if ($route == 'sales.index')
-    <li class="menu-item">
-        <a class="menu-link" href="#">
-            <div>Menu</div>
-        </a>
-        <ul class="sub-menu-container">
-            <li class="menu-item"><a class="menu-link" href="{{ route('cashier.home') }}">
-                    <div>Home</div>
-                </a></li>
 
-            <li class="menu-item">
-                <a class="menu-link" href="{{ route('sales.all.index') }}">
-                    <div>All Sales</div>
-                </a>
-            </li>
-
-            <li class="menu-item"><a class="menu-link" href="{{ route('expense.index') }}">
-                    <div>Expense</div>
-                </a></li>
-
-            <li class="menu-item"><a class="menu-link" href="{{ route('customers.index') }}">
-                    <div>Customers</div>
-                </a></li>
-        </ul>
-    </li>
-@else
     <li class="menu-item {{ $route == 'cashier.home' ? 'current' : '' }} "><a class="menu-link"
             href="{{ route('cashier.home') }}">
             <div>Home</div>
         </a></li>
     <li
-        class="menu-item {{ $route == 'sales.index' ? 'current' : '' }} {{ $route == 'returns.all' ? 'current' : '' }}   {{ $route == 'sales.all.index' ? 'current' : '' }} {{ $route == 'estimate.all.index' ? 'current' : '' }}">
+        class="menu-item {{ $route == 'transactions.index' ? 'current' : '' }} {{ $route == 'returns.all' ? 'current' : '' }}   {{ $route == 'sales.all.index' ? 'current' : '' }} {{ $route == 'estimate.all.index' ? 'current' : '' }}">
         <a class="menu-link" href="#">
             <div>Transactions</div>
         </a>
         <ul class="sub-menu-container">
-            <li class="menu-item {{ $route == 'sales.index' ? 'current' : '' }}">
-                <a class="menu-link" href="{{ route('sales.index') }}">
+            <li class="menu-item {{ $route == 'transactions.index' ? 'current' : '' }}">
+                <a class="menu-link" href="{{ route('transactions.index') }}">
                     <div>Record Transactions</div>
                 </a>
             </li>
 
             <li class="menu-item {{ $route == 'sales.all.index' ? 'current' : '' }}">
                 <a class="menu-link" href="{{ route('sales.all.index') }}">
-                    <div>View Sales</div>
+                    <div>All Sales</div>
                 </a>
             </li>
             <li class="menu-item {{ $route == 'estimate.all.index' ? 'current' : '' }}">
                 <a class="menu-link" href="{{ route('estimate.all.index') }}">
-                    <div>View Estimates</div>
+                    <div>All Estimates</div>
                 </a>
             </li>
             <li class="menu-item {{ $route == 'returns.all' ? 'current' : '' }}">
                 <a class="menu-link" href="{{ route('returns.all') }}">
-                    <div>View Returns</div>
+                    <div>All Returns</div>
+                </a>
+            </li>
+            <li class="menu-item {{ $route == 'fund_transfer.index' ? 'current' : '' }}">
+                <a class="menu-link" href="{{ route('fund_transfer.index') }}">
+                    <div>Funds Transfer</div>
                 </a>
             </li>
         </ul>
@@ -117,4 +97,4 @@
             </li>
         </ul>
     </li>
-@endif
+

@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Estimate;
 use App\Models\Expense;
 use App\Models\Returns;
+use Illuminate\Support\Str;
 
 
 class SalesController extends Controller
@@ -109,13 +110,39 @@ class SalesController extends Controller
 
     public function store(Request $request)
     {
+        // dd($request->all());
+        $productIds = $request->input('product_id');
+        $quantities = $request->input('quantity');
+        $remainingQuantities = $request->input('remaining_quantity');
         $transaction_type = $request->input('transaction_type');
-        if (in_array(null, $request->quantity, true)) {
-            return response()->json([
-                'status' => 400,
-                'message' => 'Quantity cannot be empty for any product.',
-            ]);
+
+        foreach ($productIds as $key => $productId) {
+            
+            if (!isset($quantities[$key]) || $quantities[$key] < 1) {
+                return response()->json([
+                    'status' => 400,
+                    'message' => "Row " . ($key + 1) . ": Quantity field is required.",
+                ]);
+            };
+
+            if($transaction_type == 'sales')
+            {
+                if ($remainingQuantities[$key] < 1) {
+                    return response()->json([
+                        'status' => 400,
+                        'message' => "Row " . ($key + 1) . ": The product has finished",
+                    ]);
+                }
+                if ($quantities[$key] > $remainingQuantities[$key]) {
+                    return response()->json([
+                        'status' => 400,
+                        'message' => "Row " . ($key + 1) . ":The entered quantity exceeds the remaining quantity.",
+                    ]);
+                }
+            };
         }
+
+        $transaction_id = Str::uuid();
 
         if ($transaction_type == "sales") {
            
@@ -123,15 +150,6 @@ class SalesController extends Controller
             $paymentMethod = $request->input('payment_method');
             $status = null;
             $payment_amount = null;
-
-            $year = date('Y');
-            $month = Carbon::now()->format('m');
-            $day = Carbon::now()->format('d');
-            $last = Sale::whereDate('created_at', '=', date('Y-m-d'))->latest()->first();
-            $lastRecord = $last ? $last->receipt_no : '1/0';
-            [$prefix, $number] = explode("/", $lastRecord);
-            $number = sprintf("%04d", $number + 1);
-            $trxId = $year . $month . $day . '/' . $number;
 
             $totalPrice = 0;
             foreach ($request->product_id as $index => $productId) {
@@ -162,7 +180,7 @@ class SalesController extends Controller
                     $payment->branch_id = auth()->user()->branch_id;
                     $payment->payment_amount = $request->paid_amount;
                     $payment->customer_id = $request->customer;
-                    $payment->receipt_nos = $trxId;
+                    $payment->receipt_nos = $transaction_id;
                     $payment->staff_id = auth()->user()->id;
                     $payment->payment_type = 'credit';
                     $payment->save();
@@ -190,9 +208,10 @@ class SalesController extends Controller
                 $data = new Sale();
                 $data->business_id = auth()->user()->business_id;
                 $data->branch_id = auth()->user()->branch_id;
-                $data->receipt_no = $trxId;
+                $data->receipt_no = $transaction_id;
                 $data->product_id = $productId;
                 $data->price = $request->price[$index];
+                $data->buying_price = $request->buying_price[$index];
                 $data->quantity = $request->quantity[$index];
                 $data->discount = $request->discount[$index] ?? 0;
                 $data->payment_method = $paymentMethod;
@@ -211,7 +230,50 @@ class SalesController extends Controller
                 // Update stock quantity
                 $stock = Product::find($productId);
                 $stock->quantity -= $request->quantity[$index];
-                $stock->update();
+                $stock->save();
+            }
+
+            if($paymentMethod == 'multiple')
+            {
+                if($request->cashAmount != null)
+                {
+                    $payment = new Payment();
+                    $payment->business_id = auth()->user()->business_id;
+                    $payment->branch_id = auth()->user()->branch_id;
+                    $payment->payment_type = 'multiple';
+                    $payment->payment_method = 'cash';
+                    $payment->payment_amount = $request->cashAmount;
+                    $payment->staff_id = auth()->user()->id;
+                    $payment->customer_id = 0;
+                    $payment->receipt_nos =  $transaction_id;
+                    $payment->save();
+                }
+                if($request->posAmount != null)
+                {
+                    $payment = new Payment();
+                    $payment->business_id = auth()->user()->business_id;
+                    $payment->branch_id = auth()->user()->branch_id;
+                    $payment->payment_type = 'multiple';
+                    $payment->payment_method = 'pos';
+                    $payment->payment_amount = $request->posAmount;
+                    $payment->staff_id = auth()->user()->id;
+                    $payment->customer_id = 0;
+                    $payment->receipt_nos =  $transaction_id;
+                    $payment->save();
+                }
+                if($request->transferAmount != null)
+                {
+                    $payment = new Payment();
+                    $payment->business_id = auth()->user()->business_id;
+                    $payment->branch_id = auth()->user()->branch_id;
+                    $payment->payment_type = 'multiple';
+                    $payment->payment_method = 'transfer';
+                    $payment->payment_amount = $request->transferAmount;
+                    $payment->staff_id = auth()->user()->id;
+                    $payment->customer_id = 0;
+                    $payment->receipt_nos =  $transaction_id;
+                    $payment->save();
+                }
             }
 
            
@@ -222,19 +284,7 @@ class SalesController extends Controller
         }
 
         if ($transaction_type == "estimate") {
-            $year = date('Y');
-            $month = Carbon::now()->format('m');
-            $day = Carbon::now()->format('d');
-            $last = Estimate::whereDate('created_at', '=', date('Y-m-d'))->latest()->first();
-            if ($last == null) {
-                $last_record = '1/0';
-            } else {
-                $last_record = $last->receipt_no;
-            }
-            $exploded = explode("/", $last_record);
-            $number = $exploded[1] + 1;
-            $padded = sprintf("%04d", $number);
-            $stored = $year . $month . $day . '/' . $padded;
+           
 
             $productCount = count($request->product_id);
             if ($productCount != null) {
@@ -243,7 +293,7 @@ class SalesController extends Controller
                     $data = new Estimate();
                     $data->business_id = auth()->user()->business_id;
                     $data->branch_id = auth()->user()->branch_id;
-                    $data->receipt_no = $stored;
+                    $data->receipt_no = $transaction_id;
                     $data->product_id = $request->product_id[$i];
                     $data->price = $request->price[$i];
                     $data->quantity = $request->quantity[$i];
@@ -290,20 +340,6 @@ class SalesController extends Controller
                     'message' => 'Low Balance in the Payment Channel.',
                 ]);
             };
-           
-            $year = date('Y');
-            $month = Carbon::now()->format('m');
-            $day = Carbon::now()->format('d');
-            $last = Returns::whereDate('created_at', '=', date('Y-m-d'))->latest()->first();
-            if ($last == null) {
-                $last_record = '1/0';
-            } else {
-                $last_record = $last->receipt_no;
-            }
-            $exploded = explode("/", $last_record);
-            $number = $exploded[1] + 1;
-            $padded = sprintf("%04d", $number);
-            $stored = $year . $month . $day . '/' . $padded;
 
             $productCount = count($request->product_id);
             if ($productCount != null) {
@@ -312,7 +348,7 @@ class SalesController extends Controller
                     $data = new Returns();
                     $data->business_id = auth()->user()->business_id;
                     $data->branch_id = auth()->user()->branch_id;
-                    $data->receipt_no = $stored;
+                    $data->receipt_no = $transaction_id;
                     $data->product_id = $request->product_id[$i];
                     $data->price = $request->price[$i];
                     $data->quantity = $request->quantity[$i];

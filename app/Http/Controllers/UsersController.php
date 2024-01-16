@@ -82,6 +82,16 @@ class UsersController extends Controller
 
     public function store(Request $request)
     {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'nullable|email|unique:users,email',
+            'phone' => 'required|max: 20|unique:users,phone',
+            'branch_id' => 'nullable|exists:branches,id', 
+            'position' => 'required|in:admin,cashier,clerk,security',
+            'password' => 'required|string|min:6',
+        ]);
+
+
         if (auth()->user()->business->has_branches == 1) {
             $branch_id = $request->branch_id;
         } else {

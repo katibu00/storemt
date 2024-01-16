@@ -6,6 +6,7 @@ use App\Http\Controllers\BranchesController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\EstimateController;
 use App\Http\Controllers\ExpensesController;
+use App\Http\Controllers\FundTransferController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PrintController;
 use App\Http\Controllers\ProductsController;
@@ -145,15 +146,15 @@ Route::group(['prefix' => 'purchases', 'middleware' => ['auth', 'admin']], funct
     Route::post('/fetch-purchases', [PurchasesController::class, 'fetchPurchases'])->name('fetch-purchases');
 });
 
-Route::group(['prefix' => 'sales', 'middleware' => ['auth', 'staff']], function () {
-    Route::get('/index', [SalesController::class, 'index'])->name('sales.index');
-    Route::post('/store', [SalesController::class, 'store'])->name('sales.store');
+Route::group(['prefix' => 'transactions', 'middleware' => ['auth', 'staff']], function () {
+    Route::get('/', [SalesController::class, 'index'])->name('transactions.index');
+    Route::post('/store', [SalesController::class, 'store'])->name('transactions.store');
     Route::post('/sales/details', [SalesController::class, 'details']);
     Route::post('/fetch-sales', [SalesController::class, 'fetchSales'])->name('fetch-sales');
     Route::post('/refresh-table', [SalesController::class, 'refresh'])->name('refresh-table');
     Route::post('/refresh-receipt', [SalesController::class, 'loadReceipt'])->name('refresh-receipt');
-    Route::get('/credit_sales/index', [SalesController::class, 'creditIndex'])->name('credit.index');
-    Route::post('/credit_sales/store', [SalesController::class, 'creditStore'])->name('credit.store');
+    // Route::get('/credit_sales/index', [SalesController::class, 'creditIndex'])->name('credit.index');
+    // Route::post('/credit_sales/store', [SalesController::class, 'creditStore'])->name('credit.store');
     Route::post('/fetch-balance', [SalesController::class, 'fetchBalance'])->name('fetch-balance');
     Route::get('/credit/index', [SalesController::class, 'index'])->name('sales.credit.index');
     Route::post('/credit/store', [SalesController::class, 'store'])->name('sales.credit.store');
@@ -269,6 +270,21 @@ Route::group(['prefix' => 'customers', 'middleware' => ['auth', 'staff']], funct
     Route::post('/admin/salary_advance/delete', [SalaryAdvanceController::class, 'delete'])->name('cashier.salary_advance.delete');
 
 });
+
+
+Route::group(['prefix' => 'funds-transfer', 'middleware' => ['auth', 'staff']], function () {
+
+    Route::get('/', [FundTransferController::class, 'index'])->name('fund_transfer.index');
+    Route::post('/store', [FundTransferController::class, 'store'])->name('fund_transfer.store');
+    
+    // Additional routes for editing and deleting transfers if needed
+    // Route::get('/funds-transfer/{id}/edit', [FundTransferController::class, 'edit'])->name('fund_transfer.edit');
+    // Route::put('/funds-transfer/{id}/update', [FundTransferController::class, 'update'])->name('fund_transfer.update');
+    // Route::delete('/funds-transfer/{id}/delete', [FundTransferController::class, 'destroy'])->name('fund_transfer.destroy');
+    
+});
+
+    
 
 Route::get('/post-data', [ApiController::class, 'store'])->name('post-data');
 

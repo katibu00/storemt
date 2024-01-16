@@ -258,6 +258,10 @@
                                                 <label class="form-check-label nott" for="deposit"><i
                                                         class="fa fa-credit-card text-success"></i> Deposit</label>
                                             </div>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input" type="radio" name="payment_method" id="multiple" value="multiple" required>
+                                                <label class="form-check-label nott" for="multiple"><i class="fa fa-list text-primary"></i> Multiple</label>
+                                            </div>
                                         </div>
 
                                         <div id="balanceContainer" class="mb-2"
@@ -271,6 +275,29 @@
                                                 <span id="newBalance" style="margin-left: 27px;">0</span>
                                             </p> --}}
                                         </div>
+
+                                        <style>
+                                            .multiple-payment-field {
+                                                border-color: red;
+                                            }
+                                        </style>
+
+                                        <div id="multiplePaymentsSection" class="col-12 form-group" style="display: none;">
+                                            <label>Multiple Payments:</label><br>
+                                            <div class="form-group">
+                                                <label for="cashAmount">Cash:</label>
+                                                <input type="number" class="form-control" name="cashAmount" id="cashAmount">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="posAmount">POS:</label>
+                                                <input type="number" class="form-control" name="posAmount" id="posAmount">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="transferAmount">Transfer:</label>
+                                                <input type="number" class="form-control" name="transferAmount" id="transferAmount">
+                                            </div>
+                                        </div>
+
 
                                         <div id="paidAmountField" style="padding: 0; margin: 0;">
                                             <span id="paid_amount_span">Paid Amount</span>
@@ -319,109 +346,157 @@
         });
     </script>
 
-    <script>
-        $(document).ready(function() {
-            updateSections();
+<script>
+    $(document).ready(function() {
+        updateSections();
 
-            $("input[name='transaction_type']").change(updateSections);
-        });
+        $("input[name='transaction_type']").change(updateSections);
+    });
 
-        function updateSections() {
-            var selectedTransactionType = $("input[name='transaction_type']:checked").val();
-            var paymentMethodSection = $("#paymentMethodSection");
-            var paymentMethodInputs = $("input[name='payment_method']");
-            var paidAmountField = $("#paidAmountField");
+    function updateSections() {
+        var selectedTransactionType = $("input[name='transaction_type']:checked").val();
+        var paymentMethodSection = $("#paymentMethodSection");
+        var paymentMethodInputs = $("input[name='payment_method']");
+        var paidAmountField = $("#paidAmountField");
+        var addLaborCostField = $("#addLaborCostField");
+        var laborCostField = $("#laborCostField");
 
-            if (selectedTransactionType === "estimate") {
-                paymentMethodSection.hide();
-                paidAmountField.hide();
-                $("#changeField").hide();
-                $('#balanceContainer').hide();
-                paymentMethodInputs.removeAttr("required");
-            } else if (selectedTransactionType === "return") {
-                paymentMethodSection.show();
-                $("#changeField").hide();
-                paidAmountField.hide();
-                $('#balanceContainer').hide();
-                paymentMethodInputs.attr("required", true);
-            } else {
-                paymentMethodSection.show();
-                paidAmountField.show();
+        if (selectedTransactionType === "estimate") {
+            paymentMethodSection.hide();
+            paidAmountField.hide();
+            $("#changeField").hide();
+            $('#balanceContainer').hide();
+            $('#multiplePaymentsSection').hide();
+            addLaborCostField.show();
+            paymentMethodInputs.removeAttr("required");
+        } else if (selectedTransactionType === "return") {
+            paymentMethodSection.show();
+            $("#changeField").hide();
+            paidAmountField.hide();
+            $('#balanceContainer').hide();
+            $('#multiplePaymentsSection').hide();
+            addLaborCostField.hide();
+            laborCostField.hide();
+            paymentMethodInputs.attr("required", true);
+        } else {
+            paymentMethodSection.show();
+            paidAmountField.show();
+            addLaborCostField.show();
 
-                paymentMethodInputs.attr("required", true);
-            }
+            paymentMethodInputs.attr("required", true);
         }
-    </script>
+    }
+</script>
 
 
-    <script>
-        $(document).ready(function() {
-            $('input[name="payment_method"]').change(function() {
-                var selectedPaymentMethod = $('input[name="payment_method"]:checked').val();
-                var selectedUserId = $('#customer').val();
 
-                if (selectedPaymentMethod === 'credit' || selectedPaymentMethod === 'deposit') {
-                    if (selectedUserId == 0) {
-                        toastr.warning('Please select a user before choosing the payment method.');
-                        $('input[name="payment_method"]').prop('checked', false);
-                        return;
-                    }
-                    
-                    $.ajax({
-                        url: '/fetch-credit-balance',
-                        method: 'GET',
-                        data: {
-                            payment_method: selectedPaymentMethod,
-                            user_id: selectedUserId,
-                        },
-                        success: function(response) {
+<script>
+    $(document).ready(function() {
 
-                            $('#balanceContainer').show();
-                            if (selectedPaymentMethod === 'credit') {
+        function updateTotalMultiplePayments() {
+            var cashAmount = parseFloat($('#cashAmount').val()) || 0;
+            var posAmount = parseFloat($('#posAmount').val()) || 0;
+            var transferAmount = parseFloat($('#transferAmount').val()) || 0;
+            var totalMultiplePayments = cashAmount + posAmount + transferAmount;
 
-                                $('#previousBalanceLabel').text('Previous Credit Balance:');
-                                $('#previousBalance').text(response.balance_or_deposit);
+            // Create or update the totalAmountMultiplePayments element
+            var totalAmountMultiplePayments = $('#totalAmountMultiplePayments');
+            if (totalAmountMultiplePayments.length === 0) {
+                totalAmountMultiplePayments = $('<p id="totalAmountMultiplePayments" class="font-weight-bold"></p>');
+                $('#multiplePaymentsSection').append(totalAmountMultiplePayments);
+            }
 
-                                var newCreditBalance = parseFloat(response.balance_or_deposit) +
-                                    parseFloat($('#totalAmount').text().replace('₦', '')
-                                        .replace(',', ''));
-                                $('#newBalanceLabel').text('New Credit Balance:');
-                                $('#newBalance').text(newCreditBalance.toLocaleString());
+            totalAmountMultiplePayments.text('₦' + totalMultiplePayments.toLocaleString());
+        }
+            
+        $('input[name="payment_method"]').change(function() {
 
-                                $("#paid_amount_span").text('Partial Cash Amount Paid (if any)');
-                                $("#paidAmountField").show();
+            var selectedPaymentMethod = $('input[name="payment_method"]:checked').val();
+            var selectedUserId = $('#customer').val();
 
-                            } else if (selectedPaymentMethod === 'deposit') {
-
-                                $('#previousBalanceLabel').text('Previous Deposit Balance:');
-                                $('#previousBalance').text(response.balance_or_deposit);
-
-                                var newDepositBalance = parseFloat(response
-                                    .balance_or_deposit) - parseFloat($('#totalAmount')
-                                    .text()
-                                    .replace('₦', '').replace(',', ''));
-                                $('#newBalanceLabel').text('New Deposit Balance:');
-                                $('#newBalance').text(newDepositBalance.toLocaleString());
-                            }
-                        },
-                        error: function(error) {
-                            console.error('Error fetching balance:', error);
-                        }
-                    });
-                } else {
-
-                    $('#balanceContainer').hide();
-                    $("#paid_amount_span").text('Amount Paid');
+            if (selectedPaymentMethod === 'credit' || selectedPaymentMethod === 'deposit') {
+                if (selectedUserId == 0) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Please select a user before choosing the payment method.',
+                    }); 
+                    $('input[name="payment_method"]').prop('checked', false);
+                    return;
                 }
-                if(selectedPaymentMethod === 'cash'){
-                        $("#paidAmountField").show();
-                    }else{
-                        $("#paidAmountField").hide();
-                 }
-               
-            });
+                
+                $.ajax({
+                    url: '/fetch-credit-balance',
+                    method: 'GET',
+                    data: {
+                        payment_method: selectedPaymentMethod,
+                        user_id: selectedUserId,
+                    },
+                    success: function(response) {
+
+                        $('#balanceContainer').show();
+                        if (selectedPaymentMethod === 'credit') {
+
+                            $('#previousBalanceLabel').text('Previous Credit Balance:');
+                            $('#previousBalance').text(response.balance_or_deposit);
+
+                            var newCreditBalance = parseFloat(response.balance_or_deposit) +
+                                parseFloat($('#totalAmount').text().replace('₦', '')
+                                    .replace(',', ''));
+                            $('#newBalanceLabel').text('New Credit Balance:');
+                            $('#newBalance').text(newCreditBalance.toLocaleString());
+
+                            $("#paid_amount_span").text('Partial Cash Amount Paid (if any)');
+                            $("#paidAmountField").show();
+
+                        } else if (selectedPaymentMethod === 'deposit') {
+
+                            $('#previousBalanceLabel').text('Previous Deposit Balance:');
+                            $('#previousBalance').text(response.balance_or_deposit);
+
+                            var newDepositBalance = parseFloat(response
+                                .balance_or_deposit) - parseFloat($('#totalAmount')
+                                .text()
+                                .replace('₦', '').replace(',', ''));
+                            $('#newBalanceLabel').text('New Deposit Balance:');
+                            $('#newBalance').text(newDepositBalance.toLocaleString());
+                        }
+                    },
+                    error: function(error) {
+                        console.error('Error fetching balance:', error);
+                    }
+                });
+            } else {
+
+                $('#balanceContainer').hide();
+                $("#paid_amount_span").text('Cash Amount Paid');
+            }
+            if(selectedPaymentMethod === 'cash'){
+                    $("#paidAmountField").show();
+                }else{
+                    $("#paidAmountField").hide();
+             }
+
+             if (selectedPaymentMethod === 'multiple') {
+                // Show additional form fields for multiple payments
+                $('#multiplePaymentsSection').show();
+                updateTotalMultiplePayments();
+                
+            }else{
+                $('#multiplePaymentsSection').hide();
+
+            } 
+           
         });
-    </script>
+
+        $('#multiplePaymentsSection input').on('input', function() {
+            updateTotalMultiplePayments();
+        });
+
+
+    });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
         var transactionType = $("input[name='transaction_type']:checked").val();
@@ -430,6 +505,10 @@
             transactionType = $(this).val();
         });
 
+    </script>
+
+
+    <script>
         $(document).ready(function() {
 
 
@@ -478,6 +557,7 @@
                 });
             }
 
+
             function calculateChange() {
                 var totalAmount = parseFloat($('#totalAmount').text().replace('₦', '').replace(',',
                     ''));
@@ -517,6 +597,7 @@
                 $('#totalAmount').text(formattedTotal);
             }
 
+           
             function appendProductToTable(product) {
                 var newRow = "<tr>" +
                     "<td class='sn-column'></td>" +
@@ -527,26 +608,12 @@
                     "<td class='total'>0</td>" +
                     "<td>" +
                     "<input type='hidden' name='product_id[]' value='" + product.id + "'>" +
-                    "<input type='hidden' name='price[]' value='" + product.selling_price + "'>" +
+                    "<input type='hidden' name='price[]' value='" + product.selling_price + "'><input type='hidden' name='buying_price[]' value='" + product.buying_price + "'><input type='hidden' name='remaining_quantity[]' value='" + product.quantity + "'>" +
                     "<button class='btn btn-danger remove-btn'>X</button>" +
                     "</td>" +
                     "</tr>";
 
                 var $newRow = $(newRow);
-                var availableQuantity = product.quantity;
-
-                if (transactionType === "sales" || transactionType === undefined) {
-                    $newRow.find('.quantity').on('input', function() {
-                        var enteredQuantity = parseFloat($(this).val()) || 0;
-
-                        if (enteredQuantity > availableQuantity) {
-                            toastr.warning('Entered quantity (' + enteredQuantity +
-                                ') exceeds available quantity (' + availableQuantity + ').');
-                            $(this).val('');
-                        }
-                    });
-                }
-
                 $productTable.prepend($newRow);
                 updateSerialNumbers();
                 $productSearch.val('');
@@ -704,6 +771,22 @@
             $('#salesForm').submit(function(event) {
                 event.preventDefault();
 
+                var selectedPaymentMethod = $('input[name="payment_method"]:checked').val();
+
+                if (selectedPaymentMethod === 'multiple') {
+                    var totalAmountDisplayed = parseFloat($('#totalAmount').text().replace('₦', '').replace(',', ''));
+                    var totalAmountEntered = parseFloat($('#totalAmountMultiplePayments').text().replace('₦', '').replace(',', ''));
+
+                    if (totalAmountEntered !== totalAmountDisplayed) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Total amount entered does not match the displayed total. Please check the amounts again.'
+                        });           
+                    return;
+                    }
+                }
+
                 var formData = $(this).serialize();
                 $.ajaxSetup({
                     headers: {
@@ -713,34 +796,49 @@
                 $.LoadingOverlay("show");
 
                 $.ajax({
-                    url: '{{ route('sales.store') }}',
+                    url: '{{ route('transactions.store') }}',
                     type: 'POST',
                     data: formData,
                     success: function(response) {
 
-                        if (response.status === 201) {
-                            toastr.success(response.message, 'Success');
-                            updateTable();
-                            $('#productTable').empty();
-                            $('#customer').val('0').change();
-                            $('#balanceContainer').hide();
-                            $('#totalAmount').text('₦0');
-                            $('input[name="payment_method"]').prop('checked', false);
-                            $("#salesForm")[0].reset();
-                            $("input[name='transaction_type']").prop("checked", false);
-                            $("#changeField").hide();
+                    if (response.status === 201) {
+                        toastr.success(response.message, 'Success');
+                        updateTable();
+                        $('#productTable').empty();
+                        $('#customer').val('0').change();
+                        $('#balanceContainer').hide();
+                        $('#totalAmount').text('₦0');
+                        $('input[name="payment_method"]').prop('checked', false);
+                        $("#salesForm")[0].reset();
+                        $("input[name='transaction_type']").prop("checked", false);
+                        $("#changeField").hide();
+                        $("#laborCostField").hide();
+                        $("#paid_amount_span").text('Cash Amount Paid');
 
-                        } else if (response.status === 400) {
-                            toastr.error(response.message, 'Error');
-                        }
-                        $.LoadingOverlay("hide");
+                    } else if (response.status === 400) {
+                        toastr.error(response.message, 'Error');
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: response.message,
+                        }); 
+                    }
+                    $.LoadingOverlay("hide");
 
                     },
                     error: function(error) {
-                        console.error(error);
-                        toastr.error('An error occurred while processing the request.',
-                            'Error');
-                        $.LoadingOverlay("hide");
+                    if (error.responseJSON && error.responseJSON.status === 400 && error.responseJSON.message) {
+                        // Display validation error using Swal
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Validation Error',
+                            text: error.responseJSON.message,
+                        });
+                    } else {
+                        toastr.error('An error occurred while processing the request.', 'Error');
+                    }
+
+                    $.LoadingOverlay("hide");
                     }
                 });
             });
