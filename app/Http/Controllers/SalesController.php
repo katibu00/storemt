@@ -136,7 +136,7 @@ class SalesController extends Controller
                 if ($quantities[$key] > $remainingQuantities[$key]) {
                     return response()->json([
                         'status' => 400,
-                        'message' => "Row " . ($key + 1) . ":The entered quantity exceeds the remaining quantity.",
+                        'message' => "Row " . ($key + 1) . ":Only ". $remainingQuantities[$key] ." Quantity Remaining",
                     ]);
                 }
             };
