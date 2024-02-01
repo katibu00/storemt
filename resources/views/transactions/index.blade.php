@@ -300,9 +300,18 @@
 
 
                                         <div id="paidAmountField" style="padding: 0; margin: 0;">
-                                            <span id="paid_amount_span">Paid Amount</span>
+                                            <span id="paid_amount_span"> Amount Paid</span>
                                             <input type="number" name="paid_amount" id="paid_amount"
                                                 class="form-control mb-2">
+                                        </div>
+                                        <div id="partialAmountField" style="display: none;padding: 0; margin: 0;">
+                                            <span>Partial Amount Payment Channel</span>
+                                            <select class="form-select" name="partial_payment_method">
+                                                <option value=""></option>
+                                                <option value="cash">Cash</option>
+                                                <option value="transfer">Transfer</option>
+                                                <option value="pos">POS</option>
+                                            </select>
                                         </div>
 
                                         <div id="changeField" style="display: none;">
@@ -353,39 +362,44 @@
         $("input[name='transaction_type']").change(updateSections);
     });
 
+  
     function updateSections() {
-        var selectedTransactionType = $("input[name='transaction_type']:checked").val();
-        var paymentMethodSection = $("#paymentMethodSection");
-        var paymentMethodInputs = $("input[name='payment_method']");
-        var paidAmountField = $("#paidAmountField");
-        var addLaborCostField = $("#addLaborCostField");
-        var laborCostField = $("#laborCostField");
+            var selectedTransactionType = $("input[name='transaction_type']:checked").val();
+            var paymentMethodSection = $("#paymentMethodSection");
+            var paymentMethodInputs = $("input[name='payment_method']");
+            var paidAmountField = $("#paidAmountField");
+            var partialAmountField = $("#partialAmountField");
+            var addLaborCostField = $("#addLaborCostField");
+            var laborCostField = $("#laborCostField");
 
-        if (selectedTransactionType === "estimate") {
-            paymentMethodSection.hide();
-            paidAmountField.hide();
-            $("#changeField").hide();
-            $('#balanceContainer').hide();
-            $('#multiplePaymentsSection').hide();
-            addLaborCostField.show();
-            paymentMethodInputs.removeAttr("required");
-        } else if (selectedTransactionType === "return") {
-            paymentMethodSection.show();
-            $("#changeField").hide();
-            paidAmountField.hide();
-            $('#balanceContainer').hide();
-            $('#multiplePaymentsSection').hide();
-            addLaborCostField.hide();
-            laborCostField.hide();
-            paymentMethodInputs.attr("required", true);
-        } else {
-            paymentMethodSection.show();
-            paidAmountField.show();
-            addLaborCostField.show();
+            if (selectedTransactionType === "estimate") {
+                paymentMethodSection.hide();
+                paidAmountField.hide();
+                partialAmountField.hide();
+                $("#changeField").hide();
+                $('#balanceContainer').hide();
+                $('#multiplePaymentsSection').hide();
+                addLaborCostField.show();
+                paymentMethodInputs.removeAttr("required");
+            } else if (selectedTransactionType === "return") {
+                paymentMethodSection.show();
+                $("#changeField").hide();
+                paidAmountField.hide();
+                partialAmountField.hide();
+                $('#balanceContainer').hide();
+                $('#multiplePaymentsSection').hide();
+                addLaborCostField.hide();
+                laborCostField.hide();
+                paymentMethodInputs.attr("required", true);
+            } else {
+                paymentMethodSection.show();
+                paidAmountField.show();
+                partialAmountField.hide();
+                addLaborCostField.show();
 
-            paymentMethodInputs.attr("required", true);
+                paymentMethodInputs.attr("required", true);
+            }
         }
-    }
 </script>
 
 
@@ -445,7 +459,7 @@
                                     .replace(',', ''));
                             $('#newBalanceLabel').text('New Credit Balance:');
                             $('#newBalance').text(newCreditBalance.toLocaleString());
-
+                            $("#partialAmountField").show();
                             $("#paid_amount_span").text('Partial Cash Amount Paid (if any)');
                             $("#paidAmountField").show();
 
@@ -473,8 +487,10 @@
             }
             if(selectedPaymentMethod === 'cash'){
                     $("#paidAmountField").show();
+                    $("#partialAmountField").hide();
                 }else{
                     $("#paidAmountField").hide();
+                    $("#partialAmountField").hide();
              }
 
              if (selectedPaymentMethod === 'multiple') {
@@ -813,6 +829,7 @@
                         $("input[name='transaction_type']").prop("checked", false);
                         $("#changeField").hide();
                         $("#laborCostField").hide();
+                        $("#partialAmountField").hide();
                         $("#paid_amount_span").text('Cash Amount Paid');
 
                     } else if (response.status === 400) {
