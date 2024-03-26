@@ -31,7 +31,7 @@
             <tr>
               <td class="text-center">{{ $key + $returns->firstItem() }}</td>
 
-              <th scope="row">{{ $sale->receipt_no }}</th>
+              <th scope="row">{{ $sale->created_at }}</th>
               <td>{{ $saled[0]->created_at->format('l, d F') }}</td>
               <td>{{ is_numeric($saled[0]->customer) ? @$saled[0]->customer->name : @$saled[0]->customer_id}}</td>
               <td class="text-center">{{ number_format($total_amount,0) }}</td>

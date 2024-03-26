@@ -26,7 +26,7 @@
                     @endphp 
                         <tr>
                             <td>{{ $key2 + 1 }}</td>
-                            <td>{{ $recent->estimate_no }}</td>
+                            <td>{{ $recent->created_at }}</td>
                            
                             <td>{{ $recent->customer }}</td>
                             <td>&#8358;{{ number_format($total_amount,0) }}</td>

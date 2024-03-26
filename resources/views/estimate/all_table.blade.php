@@ -36,7 +36,7 @@
                     <td class="text-center">{{ $key + 1 }}</td>
                 @endif
 
-              <th scope="row">{{ $estimate->receipt_no }}</th>
+              <th scope="row">{{ $estimate->created_at }}</th>
               <td>{{ $estimated[0]->created_at->format('l, d F') }}</td>
               <td>
                 @if ($estimated[0]->customer == 0)

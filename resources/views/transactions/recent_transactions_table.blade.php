@@ -15,7 +15,7 @@
             @foreach ($transactionData as $index => $transaction)
                 <tr>
                     <td>{{ $index + 1 }}</td>
-                    <td>{{ $transaction['transaction_no'] }}</td>
+                    <td>{{ $transaction['created_at'] }}</td>
                     <td>{{ $transaction['type'] }}</td>
                     <td>{{ number_format($transaction['totalAmount'], 0) }}</td>
                     <td>

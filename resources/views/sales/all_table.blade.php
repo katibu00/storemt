@@ -36,7 +36,7 @@
                     @else
                         <td class="text-center">{{ $key + 1 }}</td>
                     @endif
-                    <th scope="row">{{ $sale->receipt_no }}</th>
+                    <th scope="row">{{ $sale->created_at }}</th>
                     <td>{{ $saled[0]->created_at->format('l, d F') }}</td>
                     <td>{{ is_numeric($saled[0]->customer_id) ? @$saled[0]->customer->name : @$saled[0]->customer_id }}
                     </td>
