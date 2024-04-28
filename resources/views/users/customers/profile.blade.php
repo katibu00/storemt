@@ -449,7 +449,7 @@
                                     <input type="hidden" value="{{ $amount_payable }}" name="full_payment_payable[]" />
                                     <tr class="{{ $date->status == 'partial' ? 'bg-info text-white' : '' }}">
                                         <td>{{ $key + 1 }}</td>
-                                        <td>{{ $date->receipt_no }}</td>
+                                        <td>{{ $date->created_at }}</td>
                                         <td>&#8358;{{ number_format($amount_payable, 0) }}</td>
                                         <td>
                                             <div class="form-check form-check-inline">
@@ -724,7 +724,7 @@
                 var html = '';
                 var total = 0;
 
-                html += `The payment of &#8358;${res.payment.payment_amount.toLocaleString()} was paid to the above named business on ${res.date} in settlement of Sales Receipt ${res.payment.receipt_nos}. <br/> Your Updated Current Balance is &#8358;${res.balance.toLocaleString()}`
+                html += `The payment of &#8358;${res.payment.payment_amount.toLocaleString()} was paid to the above named business on ${res.date} in settlement of Sales Receipt ${res.payment.created_at}. <br/> Your Updated Current Balance is &#8358;${res.balance.toLocaleString()}`
                 
                 html = $('#content-body').html(html);
 
