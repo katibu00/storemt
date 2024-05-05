@@ -95,7 +95,7 @@
                                                         @endphp
                                                         <tr>
                                                             <td>{{ $key3 + 1 }}</td>
-                                                            <td colspan="2">{{ $date->created_at->format('l, d F').' (S'.$date->receipt_no.')' }} </td>
+                                                            <td colspan="2">{{ $date->created_at->format('l, d F Y') }} </td>
                                                             <td></td>
                                                             <td></td>
                                                             <td><a href="{{ route('users.return.index', ['id' => $date->receipt_no]) }}" class="btn btn-danger btn-sm"><i class="fas fa-undo text-white"></i></a></td>
@@ -704,7 +704,6 @@
 
 <script>
     function PrintReceiptContent(payment_id) {
-      console.log(payment_id)
         data = {
             'payment_id': payment_id,
         }
@@ -724,7 +723,18 @@
                 var html = '';
                 var total = 0;
 
-                html += `The payment of &#8358;${res.payment.payment_amount.toLocaleString()} was paid to the above named business on ${res.date} in settlement of Sales Receipt ${res.payment.created_at}. <br/> Your Updated Current Balance is &#8358;${res.balance.toLocaleString()}`
+                var createdAtDate = new Date(res.payment.created_at);
+                var options = { 
+                    day: '2-digit',
+                    month: 'long',
+                    year: 'numeric'
+                };
+
+                var formattedDate = createdAtDate.toLocaleDateString('en-GB', options);
+
+
+
+                html += `The payment of &#8358;${res.payment.payment_amount.toLocaleString()} was paid to the above named business on ${formattedDate} in settlement of sales made on ${res.dates}. <br/> Your credit Balance is &#8358;${res.balance.toLocaleString()}`
                 
                 html = $('#content-body').html(html);
 

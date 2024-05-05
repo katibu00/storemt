@@ -24,6 +24,10 @@
                             </div>
                 
                             <div class="form-group">
+                                <label for="credit" class="col-form-label">Credit Balance:</label>
+                                <input type="number" class="form-control" id="credit" name="credit" value="{{$user->balance }}">
+                            </div>
+                            <div class="form-group">
                                 <label for="deposit" class="col-form-label">Deposit Balance:</label>
                                 <input type="number" class="form-control" id="deposit" name="deposit" value="{{$user->deposit}}">
                             </div>

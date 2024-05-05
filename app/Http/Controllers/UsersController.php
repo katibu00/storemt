@@ -169,6 +169,7 @@ class UsersController extends Controller
         $user = User::find($id);
         $user->name = $request->name;
         $user->phone = $request->phone;
+        $user->balance = $request->credit;
         $user->pre_balance = $request->pre_balance;
         $user->deposit = $request->deposit;
 
@@ -348,6 +349,7 @@ class UsersController extends Controller
             $record->payment_amount += $total_amount_paid;
             $record->branch_id = auth()->user()->branch_id;
             $record->customer_id = $request->customer_id;
+            $record->customer_balance = $customer->balance;
             $record->receipt_nos = implode(',', $receipt_nos);
             $record->staff_id = auth()->user()->id;
             $record->payment_type = 'credit';
@@ -436,18 +438,30 @@ class UsersController extends Controller
         return response()->json(['message' => 'Deposit updated successfully']);
     }
 
+   
+
     public function loadReceipt(Request $request)
-    {
-        $payment = Payment::find($request->payment_id);
-        $date = $payment->created_at->format('l, d F, Y');
-        @$balance = User::select('balance')->where('id', $payment->customer_id)->first();
-        return response()->json([
-            'status' => 200,
-            'payment' => $payment,
-            'date' => $date,
-            'balance' => @$balance->balance,
-        ]);
+{
+    $payment = Payment::find($request->payment_id);
+    $receiptNos = explode(',', $payment->receipt_nos);
+
+    $formattedDates = [];
+
+    foreach ($receiptNos as $receiptNo) {
+        $sale = Sale::where('receipt_no', $receiptNo)->first();
+        if ($sale) {
+            $formattedDate = date('d F Y', strtotime($sale->created_at));
+            $formattedDates[] = $formattedDate;
+        }
     }
+
+    return response()->json([
+        'status' => 200,
+        'payment' => $payment,
+        'dates' => $formattedDates,
+        'balance' => $payment->customer_balance ?? 0,
+    ]);
+}
 
     public function deleteCustomer(Request $request)
     {

@@ -180,6 +180,12 @@ class SalesController extends Controller
                             'message' => 'Please choose Partial Amount Payment Channel',
                         ]);
                     }
+                    $status = 'partial';
+                    $payment_amount = $request->paid_amount;
+                    
+                    $user = User::find($request->customer);
+                    $user->balance += ($totalPrice - $payment_amount);
+                    $user->update();
 
                     $payment = new Payment();
                     $payment->payment_method = $request->partial_payment_method;
@@ -187,17 +193,15 @@ class SalesController extends Controller
                     $payment->branch_id = auth()->user()->branch_id;
                     $payment->payment_amount = $request->paid_amount;
                     $payment->customer_id = $request->customer;
+                    $payment->customer_balance = $user->balance;
                     $payment->receipt_nos = $transaction_id;
                     $payment->staff_id = auth()->user()->id;
                     $payment->payment_type = 'credit';
                     $payment->save();
 
-                    $status = 'partial';
-                    $payment_amount = $request->paid_amount;
+                   
 
-                    $user = User::find($request->customer);
-                    $user->balance += ($totalPrice - $payment_amount);
-                    $user->update();
+
                 }else
                 {
                     $user = User::find($request->customer);
